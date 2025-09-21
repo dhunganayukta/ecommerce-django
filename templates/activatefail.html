@@ -1,0 +1,14 @@
+{% autoescape off %}
+Hi,
+
+The activation link you used is invalid, expired, or has already been used.
+
+If you already activated your account, you can log in here:
+http://{{ domain }}{% url 'handlelogin' %}
+
+If not, please try signing up again:
+http://{{ domain }}{% url 'signup' %}
+
+Thank you,
+The {{ domain }} Team
+{% endautoescape %}

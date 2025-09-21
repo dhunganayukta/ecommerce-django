@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Login{% endblock title %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center min-vh-100"
+     style="background: url('{% static 'assets/img/login.jpeg' %}') no-repeat center center; background-size: cover;">
+
+  <!-- Messages -->
+  {% if messages %}
+    <div class="position-absolute top-0 mt-3 w-50 mx-auto">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="card shadow-lg border-0 p-4"
+       style="max-width: 420px; width: 100%; border-radius: 16px; background: rgba(255,255,255,0.9);">
+
+    <h3 class="text-center mb-4 fw-bold text-dark">🛒 Welcome Back</h3>
+
+    <form action="/authen/login/" method="post">
+      {% csrf_token %}
+
+      <!-- Username -->
+      <div class="mb-3">
+        <label for="username" class="form-label fw-semibold">Username</label>
+        <input type="text" class="form-control rounded-3 shadow-sm" id="username" name="username" required>
+      </div>
+
+      <!-- Password -->
+      <div class="mb-3">
+        <label for="password" class="form-label fw-semibold">Password</label>
+        <div class="input-group">
+          <input type="password" class="form-control rounded-start-3 shadow-sm" id="password" name="password" required>
+          <button type="button" class="btn btn-outline-secondary" id="togglePassword">👁️</button>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit"
+              class="btn btn-primary w-100 fw-bold py-2 rounded-3 shadow-sm"
+              style="background: linear-gradient(90deg, #ff6f61, #ff9a8b); border: none;">
+        Login
+      </button>
+
+      <!-- Signup link -->
+      <div class="text-center mt-3">
+        <small class="text-muted">
+          Don't have an account? 
+          <a href="/authen/signup/" class="fw-semibold text-decoration-none" style="color:#ff6f61;">Sign Up</a>
+        </small>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const togglePassword = document.getElementById('togglePassword');
+  const passwordInput = document.getElementById('password');
+
+  togglePassword.addEventListener('click', function () {
+    const type = passwordInput.type === 'password' ? 'text' : 'password';
+    passwordInput.type = type;
+    this.textContent = type === 'password' ? '👁️' : '🙈';
+  });
+</script>
+{% endblock content %}

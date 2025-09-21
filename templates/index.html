@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Home{% endblock title %}
+
+{% block content %}
+<main class="main">
+  <!-- Hero Section -->
+  <section id="hero" class="hero section dark-background">
+    <img src="{% static 'assets/img/hero.jpg' %}" alt="" data-aos="fade-in">
+    <div class="container text-center" data-aos="fade-up" data-aos-delay="100">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <h2>Welcome to our Online-Store</h2>
+          <p>Your one-stop shop for all your apparel needs.</p>
+          <a href="#portfolio" class="btn-get-started">Get Started</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock content %}
+
+{% block body %}
+<section id="portfolio" class="portfolio section">
+  <div class="container section-title" data-aos="fade-up">
+    <h2>SHOP</h2>
+    <p><span>Check Our</span> <span class="description-title">Products</span></p>
+  </div>
+
+  <div class="container">
+    <!-- Filters -->
+    <ul class="portfolio-filters isotope-filters" data-aos="fade-up" data-aos-delay="100">
+      <li data-filter="*" class="filter-active">New Arrivals</li>
+      <li data-filter=".mens">Mens</li>
+      <li data-filter=".womens">Womens</li>
+      <li data-filter=".kids-wear">Kids Wear</li>
+      <li data-filter=".accessories">Accessories</li>
+    </ul>
+
+    <!-- Portfolio Items -->
+    <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="200">
+      {% for slug, products in products_by_category.items %}
+        {# Removed the unwanted heading so nothing like "Newarrivals" appears #}
+        <div class="row">
+          {% for product in products %}
+            <div class="col-md-3 isotope-item {{ slug|slugify }}">
+              <img src="{{ MEDIA_URL }}{{ product.image }}" alt="{{ product.name }}" width="200">
+              <p>{{ product.name }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Include Isotope JS -->
+<script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
+<script>
+  const grid = document.querySelector('.isotope-container');
+  const iso = new Isotope(grid, { itemSelector: '.isotope-item', layoutMode: 'fitRows' });
+
+  // Filter buttons
+  const filters = document.querySelectorAll('.portfolio-filters li');
+  filters.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const filterValue = btn.getAttribute('data-filter');
+      iso.arrange({ filter: filterValue });
+      filters.forEach(el => el.classList.remove('filter-active'));
+      btn.classList.add('filter-active');
+    });
+  });
+
+  // Cart JS
+  let cart = JSON.parse(localStorage.getItem('cart') || '{}');
+  updateCart(cart);
+
+  $('.divpr').on('click', 'button.cart', function() {
+    const idstr = this.id.toString();
+    let qty, name, price;
+    if (cart[idstr]) { qty = cart[idstr][0] + 1; }
+    else { qty = 1; name=''; price=''; cart[idstr] = [qty, name, price]; }
+    updateCart(cart);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    document.getElementById('cart').innerHTML = Object.keys(cart).length;
+  });
+
+  function updateCart(cart) {
+    let sum = 0;
+    for (let item in cart) {
+      sum += cart[item][0];
+      let div = document.getElementById('div' + item);
+      if(div) div.innerHTML = `<button id='minus${item}' class='btn btn-success minus'>-</button>
+                               <span id='val${item}'>${cart[item][0]}</span>
+                               <button id='plus${item}' class='btn btn-success plus'>+</button>`;
+    }
+    localStorage.setItem('cart', JSON.stringify(cart));
+    document.getElementById('cart').innerHTML = sum;
+  }
+
+  $('.divpr').on("click", "button.minus", function() {
+    let a = this.id.slice(5); cart['pr'+a][0] = Math.max(0, cart['pr'+a][0]-1);
+    document.getElementById('valpr'+a).innerHTML = cart['pr'+a][0]; updateCart(cart);
+  });
+
+  $('.divpr').on("click", "button.plus", function() {
+    let a = this.id.slice(4); cart['pr'+a][0]++;
+    document.getElementById('valpr'+a).innerHTML = cart['pr'+a][0]; updateCart(cart);
+  });
+</script>
+{% endblock body %}
