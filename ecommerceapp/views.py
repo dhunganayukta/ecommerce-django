@@ -5,8 +5,10 @@ from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.utils.text import slugify
+from .models import Contact, Product, Order, OrderUpdate
+from decimal import Decimal, InvalidOperation
+import json
 
-from .models import Contact, Product, Orders, OrderUpdate
 
 # ---------- Existing Views ----------
 
@@ -92,46 +94,114 @@ def about(request):
 
 def checkout(request):
     if request.method == "POST":
-        items_json = request.POST.get("itemsJson", "").strip()
-        name = request.POST.get("name", "").strip()
-        email = request.POST.get("email", "").strip()
-        address1 = request.POST.get("address1", "").strip()
-        address2 = request.POST.get("address2", "").strip()
-        city = request.POST.get("city", "").strip()
-        state = request.POST.get("state", "").strip()
-        zip_code = request.POST.get("zip_code", "").strip()
-        phone = request.POST.get("phone", "").strip()
-        amount = request.POST.get("amount", "").strip()
+        items_json = request.POST.get("itemsJson")
+        amt_str = request.POST.get("amt", "").strip()
 
-        if not all([items_json, name, email, address1, city, state, zip_code, phone, amount]):
-            messages.error(request, "All fields are required.")
+        from decimal import Decimal, InvalidOperation
+        try:
+            amount = Decimal(amt_str)
+        except (InvalidOperation, TypeError):
+            messages.error(request, "Invalid amount. Please try again.")
             return redirect("checkout")
 
-        order = Orders.objects.create(
+        order = Order.objects.create(
             items_json=items_json,
-            name=name,
-            email=email,
-            address1=address1,
-            address2=address2,
-            city=city,
-            state=state,
-            zip_code=zip_code,
-            phone=phone,
+            name=request.POST.get("name"),
+            email=request.POST.get("email"),
+            address1=request.POST.get("address1"),
+            address2=request.POST.get("address2"),
+            city=request.POST.get("city"),
+            state=request.POST.get("state"),
+            zip_code=request.POST.get("zip_code"),
+            phone=request.POST.get("phone"),
             amount=amount,
-            payment_status='Pending'
         )
-        OrderUpdate.objects.create(order_id=order.order_id, update_desc="Order Placed")
 
-        # Redirect to Khalti payment page
-        khalti_data = {
-            "public_key": "test_public_key_1234567890abcdef",
-            "product_identity": str(order.order_id),
-            "product_name": "Order {}".format(order.order_id),
-            "amount": int(float(amount) * 100),  # Amount in paisa
-            "product_url": request.build_absolute_uri('/'),
-            "return_url": request.build_absolute_uri('/khalti-success/'),
-            "cancel_url": request.build_absolute_uri('/khalti-failure/'),
+        # Clear the cart/session after order is saved
+        if "cart" in request.session:
+            del request.session["cart"]
+
+        context = {
+            "thank": True,
+            "id": order.order_id
         }
-        return render(request, "khalti_payment.html", {"khalti_data": khalti_data})
+        return render(request, "checkout.html", context)
 
     return render(request, "checkout.html")
+
+
+
+
+# -------------------------------
+# eSewa Integration
+# -------------------------------
+def esewa_payment(request):
+    """
+    Redirects to eSewa Sandbox with required parameters.
+    """
+    order_id = request.GET.get("order_id", f"ORDER_{uuid.uuid4().hex[:6]}")
+    amt = request.GET.get("amt", "1000")
+
+    context = {
+        "amt": amt,
+        "pid": order_id,
+        "scd": "EPAYTEST",  # eSewa sandbox merchant code
+        "su": request.build_absolute_uri("/esewa/success/"),
+        "fu": request.build_absolute_uri("/esewa/failure/"),
+        "esewa_url": "https://uat.esewa.com.np/epay/main"  # sandbox base url
+    }
+    return render(request, "esewa_payment.html", context)
+
+
+def esewa_success(request):
+    """
+    Handles eSewa success callback.
+    eSewa returns: amt, oid (order id), refId (transaction id)
+    """
+    amt = request.GET.get("amt")
+    oid = request.GET.get("oid")
+    ref_id = request.GET.get("refId")
+
+    context = {
+        "amt": amt,
+        "oid": oid,
+        "ref_id": ref_id,
+    }
+    return render(request, "success.html", context)
+
+
+def esewa_failure(request):
+
+    return render(request, "failure.html")
+
+
+# -------------------------------
+# Khalti Integration (Sandbox)
+# -------------------------------
+def khalti_verify(request):
+    """
+    Verifies Khalti payment token with Sandbox API.
+    """
+    if request.method == "POST":
+        data = json.loads(request.body)
+        token = data.get("token")
+        amount = data.get("amount")
+
+        url = "https://khalti.com/api/v2/payment/verify/"
+        payload = {"token": token, "amount": amount}
+        headers = {"Authorization": "Key test_secret_key_6f30ecb6c8c94db1a6c3b02da6b6f0ef"}
+
+        response = requests.post(url, data=payload, headers=headers)
+        resp_json = response.json()
+
+        if response.status_code == 200:
+            return JsonResponse({"success": True, "message": "Khalti payment verified!", "details": resp_json})
+        else:
+            return JsonResponse({"success": False, "message": "Payment verification failed!", "details": resp_json})
+
+    return JsonResponse({"success": False, "message": "Invalid request"})
+def team(request):
+    return render(request, "team.html") 
+
+def blog(request):
+    return render(request, "blog.html")

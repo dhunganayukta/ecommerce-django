@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}eSewa Payment{% endblock title %}
+
+{% block content %}
+<main class="main d-flex align-items-center justify-content-center" style="min-height:80vh;">
+  <div class="card shadow p-5 text-center">
+    <h3 class="mb-4">Redirecting to eSewa...</h3>
+    <p>Please wait while we securely process your payment.</p>
+
+    <form action="{{ esewa_url }}" method="POST" id="esewa-form">
+      <input type="hidden" name="amt" value="{{ amt }}">
+      <input type="hidden" name="pdc" value="0">
+      <input type="hidden" name="psc" value="0">
+      <input type="hidden" name="txAmt" value="0">
+      <input type="hidden" name="tAmt" value="{{ amt }}">
+      <input type="hidden" name="pid" value="{{ pid }}">
+      <input type="hidden" name="scd" value="{{ scd }}">
+      <input type="hidden" name="su" value="{{ su }}">
+      <input type="hidden" name="fu" value="{{ fu }}">
+      <button type="submit" class="btn btn-success">Pay with eSewa</button>
+    </form>
+  </div>
+</main>
+
+<script>
+  // Auto submit after 1 second
+  setTimeout(() => {
+    document.getElementById("esewa-form").submit();
+  }, 1000);
+</script>
+{% endblock content %}

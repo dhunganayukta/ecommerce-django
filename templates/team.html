@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Team{% endblock title %}
+
+{% block body_class %}team-page{% endblock body_class %}
+
+{% block content %}
+
+<!-- Main container with extra top margin to push everything below the navbar -->
+<div class="container mt-5 pt-5">   <!-- mt-5 & pt-5 add space below the nav -->
+  <div class="row justify-content-center gy-4">
+
+    <!-- Member 1 -->
+    <div class="col-lg-3 col-md-6 d-flex justify-content-center" data-aos="fade-up" data-aos-delay="100">
+      <div class="member text-center">
+        <img src="{% static 'assets/img/team/Team-1.png' %}" class="img-fluid" alt="Yukta Dhungana">
+        <div class="member-info mt-3">
+          <h4><strong>Yukta Dhungana</strong></h4> <br/>
+          <span class="role"><strong>Web Developer</strong></span> <br>
+          <p>Passionate about creating seamless online shopping experiences.
+            Dedicated to enhancing user satisfaction through innovative design and technology.
+            Always eager to learn and adapt to new challenges in the fast-paced e-commerce landscape.
+
+
+          </p>
+          <div class="social mt-2">
+            <a href="https://twitter.com/yourprofile"><i class="bi bi-twitter-x"></i></a>
+            <a href="https://www.facebook.com/yukta.dhungana19"><i class="bi bi-facebook"></i></a>
+            <a href="https://www.instagram.com/dhungana_yukta/"><i class="bi bi-instagram"></i></a>
+            <a href="https://www.linkedin.com/in/yukta-dhungana-71b21b2b7/"><i class="bi bi-linkedin"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Member 2 -->
+    <div class="col-lg-3 col-md-6 d-flex justify-content-center" data-aos="fade-up" data-aos-delay="200">
+      <div class="member text-center">
+        <img src="{% static 'assets/img/team/team-2.png' %}" class="img-fluid" alt="Nitu Josh">
+        <div class="member-info mt-3">
+          <h4><strong>Nitu Joshi</strong></h4> <br/>
+          <span class="role"><strong>Marketing Manager</strong></span><br/>
+          <p>Expert in crafting compelling marketing strategies that drive brand growth and customer engagement.
+            Skilled in digital marketing, social media management, and market analysis.
+            Committed to delivering measurable results and fostering strong customer relationships.
+          </p>
+          <div class="social mt-2">
+  <a href="https://twitter.com/yourprofile" target="_blank"><i class="bi bi-twitter"></i></a>
+  <a href="https://facebook.com/yourprofile" target="_blank"><i class="bi bi-facebook"></i></a>
+  <a href="https://instagram.com/yourprofile" target="_blank"><i class="bi bi-instagram"></i></a>
+  <a href="https://www.linkedin.com/in/nitu-joshi-521838319/" target="_blank"><i class="bi bi-linkedin"></i></a>
+</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Member 3 -->
+    <div class="col-lg-3 col-md-6 d-flex justify-content-center" data-aos="fade-up" data-aos-delay="300">
+      <div class="member text-center">
+        <img src="{% static 'assets/img/team/team-3.png' %}" class="img-fluid" alt="Nitu Joshi">
+        <div class="member-info mt-3">
+          <h4><strong>Nitika Sah</strong></h4><br>
+          <span class="role"><strong>Customer Service Representative</strong></span>
+          <br/>
+          <p>Dedicated to providing exceptional customer service and support.
+            Skilled in resolving issues, answering inquiries, and ensuring customer satisfaction.
+            Passionate about building strong relationships and enhancing the overall customer experience.</p>
+          <div class="social mt-2">
+            <a href="#"><i class="bi bi-twitter-x"></i></a>
+            <a href="https://www.facebook.com/nitika.sah.71"><i class="bi bi-facebook"></i></a>
+            <a href="https://www.instagram.com/nitika.333/"><i class="bi bi-instagram"></i></a>
+            <a href="https://www.linkedin.com/in/nitika-sah-ba859a312/"><i class="bi bi-linkedin"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+/* --- Navbar tweaks specific to this page --- */
+body.team-page .navbar {
+    background-color:#000 !important;
+    padding-top:.55rem;
+    padding-bottom:.55rem;
+}
+body.team-page .navbar .nav-link { color:#fff !important; }
+body.team-page .navbar .nav-link:hover { color:#ddd !important; }
+#header.header { background-color:rgba(0,0,0,0.85)!important; }
+#header.header.scrolled { background-color:#000!important; }
+
+/* --- Team section spacing --- */
+.container.mt-5.pt-5 {
+    margin-top: 6rem !important;  /* pushes the entire block down */
+    padding-top: 2rem;            /* extra breathing room if needed */
+}
+
+/* --- Individual member cards --- */
+.member {
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+.member:hover {
+    transform: translateY(-5px);
+}
+/* Push the images themselves slightly lower inside each card */
+.member img {
+    margin-top: 30px;
+}
+.member-info .role {
+    display: block;
+    margin-bottom: 6px; /* space between role and paragraph */
+}
+</style>
+
+{% endblock content %}

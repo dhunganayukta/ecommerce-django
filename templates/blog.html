@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+ N-Y-N Apparel Blog
+{% endblock title %}
+{% block body_class %}blog{% endblock body_class %}
+
+{% block content %}
+<section class="blog-post py-5" style="background: linear-gradient(to right, #fff0f0, #ffecec);">
+  <div class="container">
+
+    <!-- Post Title -->
+
+    <div class="text-center mb-5 accessory-header">
+
+        <h1 class="fw-bold">5 Must-Have Accessories to Upgrade Any Outfit</h1>
+        <p class="text-secondary">By <strong>N-Y-N Apparel</strong> | June 10, 2024</p>
+    </div>
+
+    <!-- Introduction -->
+    <div class="mb-5">
+      <p> <strong>Accessories can completely transform an outfit from ordinary to extraordinary. Whether you’re dressing up for a special occasion or just running errands, the right accessories add personality, style, and confidence. Here are five must-have accessories that every wardrobe needs.</strong></p>
+    </div>
+
+    <!-- 1. Statement Necklace -->
+    <div class="row align-items-center mb-5">
+      <div class="col-md-6">
+        <img src="{% static 'assets/img/blog/statement-necklace.png' %}" class="img-fluid rounded" alt="Statement Necklace">
+      </div>
+      <div class="col-md-6">
+        <h3><strong>1. Statement Necklace</strong></h3>
+        <p>A bold statement necklace can turn a simple top or dress into a showstopper. Choose one with colors or textures that complement your outfit.</p>
+        <p><strong>Example Outfit:</strong>
+            <span style="color: #6f42c1; font-weight: 500; font-style:normal;">Pair a white blouse with a chunky gold necklace to make a classic combination pop.</span></p>
+        <a href="{% url 'index' %}?category=accessories" class="btn btn-primary mt-2">Shop Necklaces</a>
+      </div>
+    </div>
+
+    <!-- 2. Versatile Handbag -->
+    <div class="row align-items-center mb-5 flex-md-row-reverse">
+      <div class="col-md-6">
+        <img src="{% static 'assets/img/blog/handbag.webp' %}" class="img-fluid rounded" alt="Handbag">
+      </div>
+      <div class="col-md-6">
+        <h3><strong>2. Versatile Handbag</strong></h3>
+        <p>Every fashionista needs a reliable handbag that suits multiple occasions. A neutral-colored leather bag works for work, casual outings, or even evening events.</p>
+        <p><strong>Tip:</strong>
+            <span style="color: #6f42c1; font-weight: 500; font-style:normal;">Invest in one structured handbag and one casual crossbody for daily versatility.</span></p>
+        <a href="{% url 'index' %}?category=accessories" class="btn btn-primary mt-2">Shop Handbags</a>
+      </div>
+    </div>
+
+    <!-- 3. Stylish Belt -->
+    <div class="row align-items-center mb-5">
+      <div class="col-md-6">
+        <img src="{% static 'assets/img/blog/belt.jpg' %}" class="img-fluid rounded" alt="Belt">
+      </div>
+      <div class="col-md-6">
+        <h3><strong>3. Stylish Belt</strong></h3>
+        <p>Belts are more than just functional—they define your silhouette and add style. A sleek black or brown belt works with trousers, dresses, and oversized shirts.</p>
+        <p><strong>Quick Hack:</strong> 
+        <span style="color: #6f42c1; font-weight: 500; font-style:normal;">Cinch your waist with a belt over a loose dress to create a flattering shape.</span></p>
+        <a href="{% url 'index' %}?category=accessories" class="btn btn-primary mt-2">Shop Belts</a>
+      </div>
+    </div>
+
+    <!-- 4. Classic Sunglasses -->
+    <div class="row align-items-center mb-5 flex-md-row-reverse">
+      <div class="col-md-6">
+        <img src="{% static 'assets/img/blog/sunglasses.webp' %}" class="img-fluid rounded" alt="Sunglasses">
+      </div>
+      <div class="col-md-6">
+        <h3><strong>4. Classic Sunglasses</strong></h3>
+        <p>Not only do sunglasses protect your eyes, but they also instantly elevate your look. Aviators, cat-eyes, or oversized frames are timeless choices.</p>
+        <p><strong>Pro Tip:</strong>
+             <span style="color: #6f42c1; font-weight: 500; font-style:normal;">Match your sunglasses with other accessories like handbags or shoes for a coordinated look.</span></p>
+        <a href="{% url 'index' %}?category=accessories" class="btn btn-primary mt-2">Shop Sunglasses</a>
+      </div>
+    </div>
+
+    <!-- 5. Elegant Scarf -->
+    <div class="row align-items-center mb-5">
+      <div class="col-md-6">
+        <img src="{% static 'assets/img/blog/scarf.webp' %}" class="img-fluid rounded" alt="Scarf">
+      </div>
+      <div class="col-md-6">
+        <h3><strong>5. Elegant Scarf</strong></h3>
+        <p >Scarves are versatile—you can wear them around your neck, tie them on a handbag, or even as a hair accessory. Opt for prints or textures that add depth to your outfit.</p>
+      <p>
+  <strong>Style Idea:</strong>
+  <span style="color: #6f42c1; font-weight: 500; font-style: normal;">
+    A silk scarf tied around your ponytail adds a chic finishing touch to a casual outfit.
+  </span>
+</p>
+
+        <a href="{% url 'index' %}?category=accessories" class="btn btn-primary mt-2">Shop Scarves</a>
+      </div>
+    </div>
+
+    <!-- Conclusion -->
+    <div class="text-center mt-5">
+      <h4><strong>Conclusion</strong></h4>
+     <p style="color: #d6336c; font-weight: 500; font-style: italic; letter-spacing: 0.5px; line-height: 1.6;">
+  Accessories are the secret ingredient to looking stylish without overcomplicating your outfit.
+  Start with these essentials, and you’ll notice the difference in your overall style.
+  Mix and match to create endless outfit possibilities!
+</p>
+      <a href="{% url 'index' %}" class="btn btn-success mt-3">Explore Our Collection</a>
+    </div>
+
+  </div>
+</section>
+
+<style>
+.accessory-header {
+    margin-top: 6rem; /* push below navbar */
+    color: #4a2f4a; /* soft purple/pinkish shade for contrast */
+}
+.accessory-header h1 {
+    color: #b94e92; /* darker pink/purple for the heading */
+    font-weight: 700;
+}
+.accessory-header p {
+    color: #7d5a7d; /* muted purple for the subtext */
+    font-style: italic; /* optional stylish touch */
+}
+body.blog .navbar {
+    background-color:#000 !important;
+    padding-top:.55rem;
+    padding-bottom:.55rem;
+}
+body.blog .navbar .nav-link { color:#fff !important; }
+body.blog .navbar .nav-link:hover { color:#ddd !important; }
+#header.header { background-color:rgba(0,0,0,0.85)!important; }
+#header.header.scrolled { background-color:#000!important; }
+
+</style>
+{% endblock content %}

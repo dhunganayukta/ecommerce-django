@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Payment Successful{% endblock title %}
+
+{% block content %}
+<main class="main d-flex align-items-center justify-content-center" style="min-height:80vh;">
+  <div class="card shadow p-5 text-center border-success">
+    <h3 class="text-success mb-3">🎉 Payment Successful!</h3>
+    <p>Thank you for your purchase. Your order has been confirmed.</p>
+
+    <div class="mt-4 text-start">
+      <h5 class="fw-bold">Transaction Details</h5>
+      <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between">
+          <span>Order ID:</span> <span>{{ oid }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <span>Amount Paid:</span> <span>Rs. {{ amt }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <span>Reference ID:</span> <span>{{ ref_id }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <a href="/" class="btn btn-primary mt-4">Go Back to Home</a>
+  </div>
+</main>
+{% endblock content %}

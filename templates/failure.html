@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Payment Failed{% endblock title %}
+
+{% block content %}
+<main class="main d-flex align-items-center justify-content-center" style="min-height:80vh;">
+  <div class="card shadow p-5 text-center border-danger">
+    <h3 class="text-danger mb-3">❌ Payment Failed</h3>
+    <p>Unfortunately, your payment could not be processed.</p>
+
+    {% if request.GET.oid %}
+      <div class="mt-4 text-start">
+        <h5 class="fw-bold">Transaction Details</h5>
+        <ul class="list-group">
+          <li class="list-group-item d-flex justify-content-between">
+            <span>Order ID:</span> <span>{{ request.GET.oid }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span>Amount Attempted:</span> <span>Rs. {{ request.GET.amt }}</span>
+          </li>
+        </ul>
+      </div>
+    {% endif %}
+
+    <a href="{% url 'checkout' %}" class="btn btn-warning mt-4">Try Again</a>
+  </div>
+</main>
+{% endblock content %}

@@ -16,14 +16,14 @@
       </div>
     {% endfor %}
 
-    <div class="text-center mb-5">
+    <div class="text-center mb-5  checkout-header">
       <h2 class="fw-bold">Checkout</h2>
-      <p class="text-muted">Review your cart and enter your details to complete your order.</p>
+      <p class="text-muted"> <strong>Review your cart and enter your details to complete your order.</strong></p>
     </div>
 
     <div class="row justify-content-center">
-      <!-- Customer Details -->
-      <div class="col-lg-5 col-md-6 mb-4">
+      <!-- Customer Details + Payment -->
+      <div class="col-lg-6 col-md-8 mb-4">
         <div class="card shadow-sm p-4">
           <h5 class="card-title mb-4">Enter Your Details</h5>
 
@@ -77,7 +77,18 @@
               </div>
             </div>
 
-            <button type="submit" class="btn btn-success w-100">Place Order</button>
+            <!-- Payment Methods -->
+            <h5 class="mb-3">Choose Payment Method</h5>
+            <div class="d-flex gap-3 mb-3">
+              <!-- eSewa -->
+              <form action="{% url 'esewa_payment' %}" method="GET" class="d-inline">
+                <button type="submit" class="btn btn-success">Pay with eSewa</button>
+              </form>
+
+              <!-- Khalti -->
+              <button id="payment-button" type="button" class="btn btn-primary">Pay with Khalti</button>
+            </div>
+
           </form>
         </div>
       </div>
@@ -99,39 +110,77 @@
 
 {% block body %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://khalti.com/static/khalti-checkout.js"></script>
 <script>
   // ---- Mini Cart Rendering ----
-  const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-  const itemsContainer = $('#mini-cart');
-  let totalPrice = 0;
-  let totalItems = 0;
+  let cart = [
+    {name: "Product 1", price: 5000, quantity: 2},
+    {name: "Product 2", price: 3000, quantity: 1},
+];
 
-  if ($.isEmptyObject(cart)) {
-    itemsContainer.append('<li class="list-group-item">Your cart is empty!</li>');
-  } else {
-    for (const key in cart) {
-      const [qtyRaw, name, priceRaw, size] = cart[key];
-      const qty   = parseInt(qtyRaw, 10)   || 0;
-      const price = parseFloat(priceRaw)   || 0;
-      const itemTotal = qty * price;
+function updateMiniCart() {
+    let miniCart = document.getElementById("mini-cart");
+    let total = 0;
+    let itemCount = 0;
+    miniCart.innerHTML = "";
 
-      totalItems += qty;
-      totalPrice += itemTotal;
+    cart.forEach(item => {
+        let itemTotal = item.price * item.quantity; // multiply by quantity
+        total += itemTotal;
+        itemCount += item.quantity;
 
-      itemsContainer.append(`
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          ${name} (${size})
-          <span>Rs. ${price.toFixed(2)} x ${qty} =
-            <b>Rs. ${itemTotal.toFixed(2)}</b></span>
-        </li>
-      `);
-    }
+        let li = document.createElement("li");
+        li.className = "list-group-item d-flex justify-content-between";
+        li.innerHTML = `${item.name} x ${item.quantity} <span>Rs. ${itemTotal}</span>`;
+        miniCart.appendChild(li);
+    });
+
+    document.getElementById("mini-total").innerText = total;
+    document.getElementById("mini-items-count").innerText = itemCount;
+}
+
+updateMiniCart();
+
+  // ---- Khalti Integration ----
+  var config = {
+      "publicKey": "test_public_key_xxx",   // replace with your public key
+      "productIdentity": "cart123",
+      "productName": "E-commerce Order",
+      "productUrl": window.location.href,
+      "paymentPreference": ["KHALTI","EBANKING","MOBILE_BANKING","CONNECT_IPS","SCT"],
+
+      "eventHandler": {
+          onSuccess (payload) {
+              fetch("{% url 'khalti_verify' %}", {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json",
+                      "X-CSRFToken": "{{ csrf_token }}"
+                  },
+                  body: JSON.stringify(payload)
+              }).then(res => res.json())
+                .then(data => {
+                  if (data.success) {
+                    alert("Payment successful!");
+                    localStorage.clear();
+                    window.location.href = "/";
+                  } else {
+                    alert("Payment failed!");
+                  }
+                });
+          },
+          onError (error) {
+              console.log(error);
+          },
+          onClose () {
+              console.log("Widget closed");
+          }
+      }
+  };
+  var checkout = new KhaltiCheckout(config);
+  document.getElementById("payment-button").onclick = function () {
+      checkout.show({amount: totalPrice * 100}); // in paisa
   }
-
-  $('#mini-total').text(totalPrice.toFixed(2));
-  $('#mini-items-count').text(totalItems);
-  $('#itemsJson').val(JSON.stringify(cart));
-  $('#amt').val(totalPrice.toFixed(2));
 
   // ---- Post-order cleanup ----
   {% if thank %}
@@ -142,6 +191,22 @@
 </script>
 
 <style>
+
+
+  .checkout-header {
+    margin-top: 10rem; /* pushes content below the navbar */
+    text-align: center;
+    color: #7d4e7d; /* soft purple/pink shade that complements light pink background */
+}
+.checkout-header h2 {
+    color: #b85c9e; /* slightly darker pink/purple for heading */
+    font-weight: 700;
+}
+.checkout-header p {
+    color: #9c6fa0; /* muted pink/purple for the subtext */
+    font-style: italic; /* adds a subtle stylish touch */
+}
+
   body.checkout-page .navbar {
     background-color:#000 !important;
     padding-top:.25rem;

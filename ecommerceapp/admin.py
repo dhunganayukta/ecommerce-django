@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, Contact, Orders, OrderUpdate
+from .models import Product, Contact, Order, OrderUpdate
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -14,8 +14,8 @@ class ContactAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'message')
     search_fields = ('name', 'email')
     ordering = ('name',)
-@admin.register(Orders)
-class OrdersAdmin(admin.ModelAdmin):
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
     list_display = ('order_id', 'name', 'email', 'amount', 'payment_status', 'order_date')
     search_fields = ('order_id', 'name', 'email')
     list_filter = ('payment_status', 'order_date')
