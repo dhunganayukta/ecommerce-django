@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Checkout{% endblock title %}
+{% block body_class %}checkout-page{% endblock body_class %}
+
+{% block content %}
+<main class="main bg-light" style="background:linear-gradient(to right,#fdf6f6,#ffecec);min-height:100vh;padding-top:20px;">
+  <div class="container">
+
+    <!-- Flash messages -->
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <strong>{{ message }}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">Checkout</h2>
+      <p class="text-muted">Review your cart and enter your details to complete your order.</p>
+    </div>
+
+    <div class="row justify-content-center">
+      <!-- Customer Details -->
+      <div class="col-lg-5 col-md-6 mb-4">
+        <div class="card shadow-sm p-4">
+          <h5 class="card-title mb-4">Enter Your Details</h5>
+
+          <form method="post" action="{% url 'checkout' %}">
+            {% csrf_token %}
+            <input type="hidden" name="itemsJson" id="itemsJson">
+            <input type="hidden" name="amt" id="amt">
+
+            <div class="mb-3">
+              <label for="name" class="form-label">Full Name</label>
+              <input type="text" class="form-control" id="name" name="name" placeholder="Your Name" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" name="email"
+                     value="{{ user.email }}" placeholder="Email" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="address1" class="form-label">Address 1</label>
+              <input type="text" class="form-control" id="address1" name="address1"
+                     placeholder="1234 Main St" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="address2" class="form-label">Address 2</label>
+              <input type="text" class="form-control" id="address2" name="address2"
+                     placeholder="Apartment, suite, or floor">
+            </div>
+
+            <div class="row mb-3">
+              <div class="col">
+                <label for="city" class="form-label">City</label>
+                <input type="text" class="form-control" id="city" name="city" required>
+              </div>
+              <div class="col">
+                <label for="state" class="form-label">Province</label>
+                <input type="text" class="form-control" id="state" name="state" required>
+              </div>
+            </div>
+
+            <div class="row mb-4">
+              <div class="col">
+                <label for="zip_code" class="form-label">Pin Code</label>
+                <input type="number" class="form-control" id="zip_code" name="zip_code" required>
+              </div>
+              <div class="col">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input type="number" class="form-control" id="phone" name="phone" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">Place Order</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm p-3 position-sticky" style="top:20px;">
+          <h5 class="card-title mb-3">Order Summary</h5>
+          <ul class="list-group" id="mini-cart"></ul>
+          <hr>
+          <p class="text-end mb-1"><strong>Total: Rs. <span id="mini-total">0</span></strong></p>
+          <p class="text-end text-muted"><small>Items: <span id="mini-items-count">0</span></small></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock content %}
+
+{% block body %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  // ---- Mini Cart Rendering ----
+  const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+  const itemsContainer = $('#mini-cart');
+  let totalPrice = 0;
+  let totalItems = 0;
+
+  if ($.isEmptyObject(cart)) {
+    itemsContainer.append('<li class="list-group-item">Your cart is empty!</li>');
+  } else {
+    for (const key in cart) {
+      const [qtyRaw, name, priceRaw, size] = cart[key];
+      const qty   = parseInt(qtyRaw, 10)   || 0;
+      const price = parseFloat(priceRaw)   || 0;
+      const itemTotal = qty * price;
+
+      totalItems += qty;
+      totalPrice += itemTotal;
+
+      itemsContainer.append(`
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          ${name} (${size})
+          <span>Rs. ${price.toFixed(2)} x ${qty} =
+            <b>Rs. ${itemTotal.toFixed(2)}</b></span>
+        </li>
+      `);
+    }
+  }
+
+  $('#mini-total').text(totalPrice.toFixed(2));
+  $('#mini-items-count').text(totalItems);
+  $('#itemsJson').val(JSON.stringify(cart));
+  $('#amt').val(totalPrice.toFixed(2));
+
+  // ---- Post-order cleanup ----
+  {% if thank %}
+    alert('Thanks for ordering with us. Your order ID is {{ id }}. Use it to track your order.');
+    localStorage.clear();
+    window.location.href = "/";
+  {% endif %}
+</script>
+
+<style>
+  body.checkout-page .navbar {
+    background-color:#000 !important;
+    padding-top:.25rem;
+    padding-bottom:.25rem;
+    min-height:20px;
+  }
+  body.checkout-page .navbar .navbar-brand { font-size:1.2rem; }
+  body.checkout-page .navbar .nav-link     { font-size:.9rem; color:#fff !important; }
+  body.checkout-page .navbar .nav-link:hover { color:#ddd !important; }
+  #header.header { background-color:rgba(0,0,0,0.85)!important; transition:background-color .3s ease; }
+  #header.header.scrolled { background-color:#000!important; }
+</style>
+{% endblock body %}

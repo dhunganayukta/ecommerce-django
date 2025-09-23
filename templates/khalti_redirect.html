@@ -1,0 +1,26 @@
+<!-- templates/khalti_redirect.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirecting to Khalti</title>
+</head>
+<body>
+  <p>Redirecting to Khalti…</p>
+
+  <!-- Option A: Auto-redirect using JavaScript -->
+  <script>
+    window.location.href = "{{ payment_url|escapejs }}";
+  </script>
+
+  <!-- Option B (if you want a form look similar to eSewa) -->
+  <form id="khaltiForm" action="{{ payment_url }}" method="GET">
+    <noscript>
+      <button type="submit">Continue to Khalti</button>
+    </noscript>
+  </form>
+  <script>
+    document.getElementById('khaltiForm').submit();
+  </script>
+</body>
+</html>

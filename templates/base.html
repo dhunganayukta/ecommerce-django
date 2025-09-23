@@ -5,13 +5,10 @@
 
 <head>
   <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-
-  <title> 
-    {% block title %}{% endblock %}
-  </title>
-  <meta  content="E-commerce Website we deliver products in less time." name="description">
-  <meta content="E-commerce" name="amazon,selling,products">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}N-Y-N Apparel - Quality Clothing{% endblock title %}</title>
+  <meta name="description" content="E-commerce Website we deliver products in less time.">
+  <meta name="keywords" content="E-commerce, amazon, selling, products">
 
   <!-- Favicons -->
   <link href="{% static 'assets/img/logo.png' %}" rel="icon">
@@ -22,177 +19,93 @@
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
-  <!-- Vendor CSS Files -->
+  <!-- Vendor CSS -->
   <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
   <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
   <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
   <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
   <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
 
-  <!-- Main CSS File -->
+  <!-- Main CSS -->
   <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
-
 </head>
 
 <body class="index-page">
+
+  <!-- Header -->
   <header id="header" class="header d-flex align-items-center fixed-top">
-  <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+    <div class="container-fluid container-xl d-flex justify-content-between align-items-center">
+      <a href="/" class="logo d-flex align-items-center">
+        <img src="{% static 'assets/img/logo.png' %}" alt="Logo" height="450" width="80">
+      </a>
 
-    <a href="/" class="logo d-flex align-items-center">
-      <img src="{% static 'assets/img/logo.png' %}" alt="Logo" height="450" width="80">
-    </a>
+      <nav id="navbar" class="navbar">
+        <ul class="d-flex align-items-center">
+          <li><a href="/" class="nav-link scrollto active">Home</a></li>
+          <li><a href="/about" class="nav-link scrollto">About</a></li>
+          <li><a href="/team" class="nav-link scrollto">Team</a></li>
+          <li><a href="/blog" class="nav-link scrollto">Blog</a></li>
+          <li><a href="/checkout" class="nav-link scrollto">Checkout</a></li>
+          <li><a href="/my-profile" class="nav-link scrollto">My Profile</a></li>
+          <li class="nav-item dropdown">
+            <a href="#" class="nav-link position-relative bg-danger text-white rounded px-3 py-2" id="cartDropdown" data-bs-toggle="dropdown">
+              <i class="bi bi-cart-fill"></i> Cart
+              <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">0</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end p-3" style="min-width:250px;" id="cart-items-dropdown">
+              <li class="text-center">Cart is empty</li>
+            </ul>
+          </li>
 
-    <nav id="navbar" class="navbar">
-      <ul class="d-flex align-items-center">
-        <li><a class="nav-link scrollto active" href="/">Home</a></li>
-        <li><a class="nav-link scrollto" href="/about">About</a></li>
-        <li><a class="nav-link scrollto" href="/team">Team</a></li>
-        <li><a class="nav-link scrollto" href="/blog">Blog</a></li>
-        <li><a class="nav-link scrollto" href="/orders">Orders</a></li>
-        <li><a class="nav-link scrollto" href="/my-profile">My Profile</a></li>
-
-        {% if user.is_authenticated %}
-        <li><a class="nav-link scrollto" href="/authen/logout/">Logout
          
-        </a></li>
-
-        {% else %}
-        <li class="nav-item dropdown">
-          <a href="#"><span>Sign In</span> <i class="bi bi-chevron-down"></i></a>
-          <ul>
-            <li><a href="/authen/signup">Sign Up</a></li>
-            <li><a href="/authen/login">Login</a></li>
-           
-          </ul>
-        </li>
-        {% endif %}
-        
-
-   <li><a class="nav-link scrollto bg-danger p-3 m-3" href="/cart">Cart</a></li>
-
-        <li><a class="nav-link scrollto bg-dark p-2 m-2" href="/contact">Contact</a></li>
 
 
+          {% if user.is_authenticated %}
+          <li><a href="/authen/logout/" class="nav-link scrollto">Logout</a></li>
+          {% else %}
+          <li class="nav-item dropdown">
+            <a href="#"><span>Sign In</span> <i class="bi bi-chevron-down"></i></a>
+            <ul>
+              <li><a href="/authen/signup">Sign Up</a></li>
+              <li><a href="/authen/login">Login</a></li>
+            </ul>
+          </li>
+          {% endif %}
 
-
-      <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
-    </nav>
-
-  </div>
-</header>
-
-
-  
-
-  <main class="main">
-
-    <!-- Hero Section -->
-    <section id="hero" class="hero section dark-background">
-
-      <img src="{% static 'assets/img/hero.jpg' %}" alt="" data-aos="fade-in">
-      <div class="container text-center" data-aos="fade-up" data-aos-delay="100">
-
-        {% block content %}
        
-        
-        {% endblock content %}
-      </div>
-        
+     
 
-    </section><!-- /Hero Section -->
+          <li><a href="/contact" class="nav-link scrollto bg-dark p-2 m-2">Contact</a></li>
 
-    {% block body %}{% endblock body %}
+          <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+        </ul>
+      </nav>
+    </div>
+  </header>
 
-  
-
+  <!-- Main Content -->
+  <main class="main" style="background: linear-gradient(to right, #fff0f0, #ffecec); min-height: 100vh;">
+    {% block content %}
     
-
-    <!-- Team  Section -->
-    <section id="team" class="team section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>Team</h2>
-        <p>Our Hardworking <span class="description-title">Team</span></p>
-      </div><!-- End Section Title -->
-
-      <div class="container">
-
-        <div class="row gy-4">
-
-          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
-            <div class="member">
-              <img src="{% static 'assets/img/team/Team-1.png' %}" class="img-fluid" alt="">
-              <div class="member-info">
-                <div class="member-info-content">
-                  <h4>Yukta Dhungana</h4>
-                  <span>Web Developer</span>
-                  <div class="social">
-                    <a href=""><i class="bi bi-twitter-x"></i></a>
-                    <a href=""><i class="bi bi-facebook"></i></a>
-                    <a href=""><i class="bi bi-instagram"></i></a>
-                    <a href=""><i class="bi bi-linkedin"></i></a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div><!-- End Team Member -->
-
-          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
-            <div class="member">
-              <img src="{% static 'assets/img/team/Team-2.png' %}" class="img-fluid" alt="">
-              <div class="member-info">
-                <div class="member-info-content">
-                  <h4>Nitu Josh</h4>
-                  <span> Marketing Manager</span>
-                  <div class="social">
-                    <a href=""><i class="bi bi-twitter-x"></i></a>
-                    <a href=""><i class="bi bi-facebook"></i></a>
-                    <a href=""><i class="bi bi-instagram"></i></a>
-                    <a href=""><i class="bi bi-linkedin"></i></a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div><!-- End Team Member -->
-
-          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
-            <div class="member">
-              <img src="{% static 'assets/img/team/Team-3.png' %}" class="img-fluid" alt="">
-              <div class="member-info">
-                <div class="member-info-content">
-                  <h4>Nitika Sah</h4>
-                  <span>Customer Service Representatives</span>
-                  <div class="social">
-                    <a href=""><i class="bi bi-twitter-x"></i></a>
-                    <a href=""><i class="bi bi-facebook"></i></a>
-                    <a href=""><i class="bi bi-instagram"></i></a>
-                    <a href=""><i class="bi bi-linkedin"></i></a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div><!-- End Team Member -->
-
-         
-
-        </div>
-
-      </div>
-
-    </section><!-- /Team 2 Section -->
-  </main><!-- End #main -->
+    
+    
+    
+    
+    {% endblock content %}
+    {% block body %}
+    
+    
+    
+    
+    
+    {% endblock body %}
+  </main><!-- Footer -->
 <!-- Footer -->
-<footer id="footer" class="footer pt-5">
+<footer id="footer" class="footer pt-5" style="background-color: #6c757d; color: white;">
   <div class="container footer-top py-5">
     <div class="row gy-4">
-      
-      <!-- About -->
       <div class="col-lg-4 col-md-6 footer-about">
-        <p>
-          At <span class="brand-name">N-Y-N Apparel</span>, we believe shopping should be fun, easy, and reliable.  
-          We offer carefully curated products with fast delivery and warm, friendly support.
-        </p>
+        <p>At <span class="brand-name">N-Y-N Apparel</span>, we believe shopping should be fun, easy, and reliable. Fast delivery and friendly support guaranteed.</p>
         <div class="social-links d-flex mt-3">
           <a href="#" class="social-icon twitter"><i class="bi bi-twitter"></i></a>
           <a href="#" class="social-icon facebook"><i class="bi bi-facebook"></i></a>
@@ -201,21 +114,19 @@
         </div>
       </div>
 
-      <!-- Useful Links -->
       <div class="col-lg-2 col-6 footer-links">
         <h4>Useful Links</h4>
         <ul>
-          <li><i class="bi bi-chevron-right"></i><a href="#">Home</a></li>
-          <li><i class="bi bi-chevron-right"></i><a href="#">About us</a></li>
-          <li><i class="bi bi-chevron-right"></i><a href="#">Team</a></li>
-          <li><i class="bi bi-chevron-right"></i><a href="#">Terms of service</a></li>
-          <li><i class="bi bi-chevron-right"></i><a href="#">Privacy policy</a></li>
+          <li><i class="bi bi-chevron-right"></i> <a href="#">Home</a></li>
+          <li><i class="bi bi-chevron-right"></i> <a href="#">About</a></li>
+          <li><i class="bi bi-chevron-right"></i> <a href="#">Team</a></li>
+          <li><i class="bi bi-chevron-right"></i> <a href="#">Terms</a></li>
+          <li><i class="bi bi-chevron-right"></i> <a href="#">Privacy</a></li>
         </ul>
       </div>
 
-      <!-- Services -->
       <div class="col-lg-2 col-6 footer-links">
-        <h4>Our Services</h4>
+        <h4>Services</h4>
         <ul>
           <li>Wide Range of Collections</li>
           <li>Fast & Reliable Delivery</li>
@@ -226,14 +137,11 @@
         </ul>
       </div>
 
-      <!-- Contact + Newsletter -->
       <div class="col-lg-4 col-md-12 footer-contact">
         <h4>Contact Us</h4>
         <p>Tamrakar Marg, New Road<br>Kathmandu, Nepal</p>
         <p><strong>Phone:</strong> +01 567896591</p>
         <p><strong>Email:</strong> nyn54@gmail.com</p>
-
-        <!-- Newsletter next to Contact -->
         <div class="newsletter mt-3">
           <form class="newsletter-form">
             <input type="email" placeholder="Your email" required>
@@ -241,130 +149,209 @@
           </form>
         </div>
       </div>
-
     </div>
   </div>
 
-  <div class="container text-center py-3 copyright-bar">
-    &copy; <span class="brand-name">N-Y-N Apparel</span>. All Rights Reserved  
-    <br>Designed by <a href="#">Yukta Dhungana</a>
+  <!-- Copyright Bar -->
+  <div class="container text-center py-3" style="background-color: #000;">
+    &copy; <span class="brand-name" style="color:#ff6f61; cursor:pointer;">N-Y-N Apparel</span>. All Rights Reserved  
+    <br>Designed by <a href="#" style="color:#ff6f61; text-decoration:none;">Yukta Dhungana</a>
   </div>
 </footer>
+
+<!-- Footer CSS -->
+
+
+
 <style>
-  /* Footer */
-footer.footer {
-  background: linear-gradient(135deg, #818080, #6e6e6e);
-  color: #f1f1f1;
-  font-size: 14px;
-  line-height: 1.6;
-}
-footer.footer h4 {
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 15px;
-}
-footer.footer p { color: #111; }
 
-/* Links */
-footer.footer ul {
-  list-style: none;
-  padding: 0;
-}
-footer.footer ul li {
-  color:#111
-}
-footer.footer ul li {
-  margin-bottom: 8px;
-}
-footer.footer ul li i {
-  color: #110e0aff;
-  margin-right: 6px;
-}
-footer.footer ul li a {
-  color: #ddd;
-  transition: 0.3s;
-}
-footer.footer ul li a:hover {
-  color: #c7660aff;
-  padding-left: 4px;
+
+body {
+  background: linear-gradient(to right, #fff0f0, #ffecec);
+  min-height: 100vh;
+  margin: 0;
+  font-family: 'Roboto', 'Poppins', sans-serif;
 }
 
-/* Social */
-.social-links {
-  gap: 10px;
-}
-
-/* Common styles for all social icons */
-.social-links .social-icon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: #e0d2d2ff;
-  color: #fff;
-  font-size: 18px;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-/* Hover effects */
-.social-links .social-icon:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-  color: #fff;
-}
-
-/* Specific brand colors on hover */
-.social-links .twitter:hover { background: #1DA1F2; }
-.social-links .facebook:hover { background: #4267B2; }
-.social-links .instagram:hover { 
-  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
-}
-.social-links .linkedin:hover { background: #0A66C2; }
-
-/* Newsletter bar */
-.newsletter-form {
-  display: flex;
-  margin-top: 15px;
-  border-radius: 25px;
-  overflow: hidden;
-  background: #fff;
-  max-width: 280px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-}
-.newsletter-form input {
-  flex: 1; border: none; padding: 8px 12px; font-size: 14px; outline: none;
-}
-.newsletter-form button {
-  background: #ff9a3c; border: none; color: #fff;
-  padding: 8px 15px; font-weight: 600; cursor: pointer;
-  transition: 0.3s;
-}
-.newsletter-form button:hover { background: #e27f1e; }
-
-/* Copyright */
-footer .copyright-bar {
-  background: #111;
-  color: #ccc;
-  font-size: 13px;
-}
-footer .copyright-bar a {
-   color: #ff6f61;
-
+ 
+  /* Footer Background */
+  #footer {
+    background-color: #555; /* Dark grey for main footer */
+    color: white;
   }
+
+  /* Footer Links */
+  #footer .footer-links ul li a {
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  #footer .footer-links ul li a:hover {
+    color: #ff6f61; /* Highlight color on hover */
+  }
+
+  /* Social Icons with brand-specific hover colors */
+  #footer .social-links a {
+    color: rgb(196, 191, 191);
+    margin-right: 10px;
+    font-size: 1.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: cornsilk;
+    transition: all 0.3s;
+  }
+
+  #footer .social-links a:hover {
+    transform: translateY(-3px);
+  }
+
+  #footer .social-links a.twitter:hover {
+    background-color: #1DA1F2;
+    color: white;
+  }
+  #footer .social-links a.facebook:hover {
+    background-color: #1877F2;
+    color: white;
+  }
+  #footer .social-links a.instagram:hover {
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+    color: white;
+  }
+  #footer .social-links a.linkedin:hover {
+    background-color: #0A66C2;
+    color: white;
+  }
+
+  /* Brand name styling in footer content */
+  #footer .brand-name {
+    color: #ffd700; /* Gold color matching copyright */
+    font-weight: bold;
+    transition: color 0.3s;
+  }
+
+  #footer .brand-name:hover {
+    color: #ffda55;
+    text-decoration: underline;
+  }
+
+  /* Copyright bar */
+  .copyright-bar {
+    background-color: #000; /* Black */
+    color: white;
+    padding: 10px 0;
+  }
+  .copyright-bar .brand-name {
+    color: #ffd700; /* Same gold as above */
+    text-decoration: none;
+  }
+  .copyright-bar .brand-name:hover {
+    color: #ffda55;
+    text-decoration: underline;
+  }
+.cart-dropdown {
+  width: 300px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 15px;
+  font-family: Arial, sans-serif;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cart-item-img {
+  width: 60px;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid #eee;
+}
+
+.cart-item-details {
+  flex: 1;
+}
+
+.cart-item-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.price {
+  font-weight: bold;
+  color: #333;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: #d9534f;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.remove-btn:hover {
+  color: #b52b27;
+}
+
+.cart-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.clear-btn, .checkout-btn {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s;
+}
+
+.clear-btn {
+  background: #f5f5f5;
+  margin-right: 10px;
+}
+
+.clear-btn:hover {
+  background: #e0e0e0;
+}
+
+.checkout-btn {
+  background: #28a745;
+  color: #fff;
+}
+
+.checkout-btn:hover {
+  background: #218838;
+}
+
+
 </style>
 
 
+
+
+
+
+  
   <!-- Scroll Top -->
-  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
+    <i class="bi bi-arrow-up-short"></i>
+  </a>
 
-  <!-- Preloader -->
-  <div id="preloader"></div>
-
-  <!-- Vendor JS Files -->
+  <!-- Vendor JS -->
   <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
   <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
@@ -373,9 +360,11 @@ footer .copyright-bar a {
   <script src="{% static 'assets/vendor/isotope-layout/isotope.pkgd.min.js' %}"></script>
   <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
 
-  <!-- Main JS File -->
+  <!-- Main JS -->
   <script src="{% static 'assets/js/main.js' %}"></script>
 
-</body>
+  
 
+
+</body>
 </html>

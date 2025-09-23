@@ -1,0 +1,193 @@
+<div class="col-md-3 isotope-item {{ slug|slugify }}">
+  <div class="card product-card h-100 border-0 shadow-sm position-relative"
+       data-description="{{ product.description|default:'Elegant'|escape }}"
+       data-sizes="{{ product.size|default:'S,M,L,XL,XXL' }}"
+       data-rating="{{ product.rating|default:0 }}"
+       data-id="{{ product.id }}">
+    
+    {% if product.is_new %}
+      <span class="badge bg-danger position-absolute top-0 start-0 m-2">New</span>
+    {% endif %}
+
+    <img src="{{ product.image.url }}" class="card-img-top product-img" alt="{{ product.name }}">
+
+    <div class="card-body text-center">
+      <h5 class="card-title">{{ product.name }}</h5>
+      <p class="card-text text-muted mb-1">Category: {{ product.category|capfirst }}</p>
+      <p class="card-text fw-bold price-highlight">Price: Rs. {{ product.price }}</p>
+      <p class="card-text description-text">
+        {{ product.description|default:"No description available." }}
+      </p>
+
+      <!-- Rating stars -->
+      <div class="product-rating mt-2 text-warning" data-rating="{{ product.rating|default:0 }}">
+        {% for i in "12345" %}
+          {% if product.rating >= i|float %}
+            <span class="star" data-value="{{ i }}">★</span>
+          {% elif product.rating >= i|float - 0.5 %}
+            <span class="star" data-value="{{ i }}">⯨</span>
+          {% else %}
+            <span class="star" data-value="{{ i }}">☆</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Product Modal -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body text-center position-relative">
+        <button type="button" class="btn-close position-absolute top-0 end-0 m-2" data-bs-dismiss="modal"></button>
+
+        <img id="modal-img" src="" class="img-fluid mb-3 modal-product-img" style="cursor:pointer;">
+        <h5 id="modal-name" class="fw-bold"></h5>
+        <p id="modal-category" class="text-muted"></p>
+        <p id="modal-price" class="fw-bold text-danger"></p>
+        <p id="modal-description" class="fst-italic"></p>
+
+        <!-- Interactive Rating -->
+        <div id="modal-rating" class="mb-2 text-warning">
+          <span class="star" data-value="1">☆</span>
+          <span class="star" data-value="2">☆</span>
+          <span class="star" data-value="3">☆</span>
+          <span class="star" data-value="4">☆</span>
+          <span class="star" data-value="5">☆</span>
+        </div>
+
+        <!-- Size selection (only in modal) -->
+        <div id="modal-sizes" class="mb-3 d-flex justify-content-center gap-2"></div>
+
+        <!-- Quantity selector -->
+        <div class="d-flex justify-content-center align-items-center mb-3">
+          <button id="qty-minus" class="btn btn-outline-secondary">-</button>
+          <span id="modal-qty" class="mx-3">1</span>
+          <button id="qty-plus" class="btn btn-outline-secondary">+</button>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="d-flex gap-2">
+          <button id="modal-buynow" class="btn btn-info flex-fill">Buy Now</button>
+          <button id="modal-addcart" class="btn btn-primary flex-fill">
+            <i class="bi bi-cart-plus"></i> Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.product-img { width: 100%; height: 250px; object-fit: cover; border-radius: 0.5rem 0.5rem 0 0; }
+.description-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: brown;
+}
+.size-btn { 
+  border: 1px solid #333; 
+  border-radius: 5px; 
+  padding: 5px 10px; 
+  cursor: pointer; 
+  transition: 0.2s; 
+  user-select: none; 
+}
+.size-btn:hover { 
+  background-color: #e63946; 
+  color: white; 
+  transform: scale(1.1); 
+}
+.size-btn.active { 
+  background-color: #1d3557; 
+  color: white; 
+}
+.star {
+  cursor: pointer;
+  font-size: 1.2rem;
+  margin: 0 2px;
+}
+.modal-product-img { width: 100%; max-height: 40vh; object-fit: contain; border-radius: 0.5rem; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // --- Initialize rating on cards ---
+  document.querySelectorAll('.product-card .product-rating').forEach(ratingEl => {
+    const stars = ratingEl.querySelectorAll('.star');
+    let currentRating = parseFloat(ratingEl.dataset.rating) || 0;
+
+    const renderStars = (val) => {
+      stars.forEach(star => {
+        const starValue = parseInt(star.dataset.value);
+        if(starValue <= Math.floor(val)) star.textContent = '★';
+        else if(starValue - 0.5 <= val) star.textContent = '⯨';
+        else star.textContent = '☆';
+      });
+    };
+    renderStars(currentRating);
+  });
+
+  // --- Modal population ---
+  document.querySelectorAll('.product-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const img = card.querySelector('.product-img').src;
+      const name = card.querySelector('.card-title').innerText;
+      const category = card.querySelector('.card-text.text-muted').innerText;
+      const price = card.querySelector('.price-highlight').innerText;
+      const description = card.dataset.description || 'Elegant';
+      const rating = parseFloat(card.dataset.rating) || 0;
+      const sizes = card.dataset.sizes ? card.dataset.sizes.split(',') : ['S','M','L','XL','XXL'];
+
+      // Populate modal fields
+      document.getElementById('modal-img').src = img;
+      document.getElementById('modal-name').innerText = name;
+      document.getElementById('modal-category').innerText = category;
+      document.getElementById('modal-price').innerText = price;
+      document.getElementById('modal-description').innerText = description;
+
+      // Render modal stars
+      const modalRating = document.getElementById('modal-rating');
+      modalRating.dataset.rating = rating;
+      modalRating.querySelectorAll('.star').forEach(star => {
+        const val = parseInt(star.dataset.value);
+        star.textContent = val <= Math.floor(rating) ? '★' : (val - 0.5 <= rating ? '⯨' : '☆');
+
+        // Interactive
+        star.onmouseenter = () => {
+          modalRating.querySelectorAll('.star').forEach(s => s.textContent = s.dataset.value <= val ? '★' : '☆');
+        };
+        star.onmouseleave = () => {
+          const r = parseFloat(modalRating.dataset.rating);
+          modalRating.querySelectorAll('.star').forEach(s => s.textContent = s.dataset.value <= r ? '★' : (s.dataset.value - 0.5 <= r ? '⯨' : '☆'));
+        };
+        star.onclick = () => {
+          modalRating.dataset.rating = val;
+          alert(`You rated ${val} star(s)`); // Replace with server call if needed
+        };
+      });
+
+      // Render sizes in modal only
+      const sizeContainer = document.getElementById('modal-sizes');
+      sizeContainer.innerHTML = '';
+      sizes.forEach(s => {
+        const btn = document.createElement('div');
+        btn.classList.add('size-btn');
+        btn.innerText = s;
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#modal-sizes .size-btn').forEach(el => el.classList.remove('active'));
+          btn.classList.add('active');
+        });
+        sizeContainer.appendChild(btn);
+      });
+
+      // Show modal
+      new bootstrap.Modal(document.getElementById('productModal')).show();
+    });
+  });
+});
+</script>

@@ -1,7 +1,115 @@
 {% extends "base.html" %}
-{% block title %}About Us{% endblock title %}
+{% load static %}
 
-        {% block body %}
-        <h1>About Us</h1>
+{% block title %}About Us - N-Y-N Apparel{% endblock title %}
 
-{% endblock body %}
+{% block content %}
+<!-- Page-specific navbar tweaks -->
+<style>
+  /* Dark background */
+  #header.header {
+    background-color: rgba(0, 0, 0, 0.85) !important;
+    transition: background-color 0.3s ease;
+  }
+  #header.header.scrolled {
+    background-color: #000 !important;
+  }
+
+  /* ↓↓↓ Reduce navbar height ↓↓↓ */
+  #header.header {
+    padding: 8px 0 !important;      /* default bootstrap often ~20px */
+    height: 60px !important;         /* shrink overall height */
+  }
+  #header .logo img {
+    max-height: 40px;                /* scale logo inside */
+  }
+  #header .navbar ul li a {
+    padding: 8px 12px !important;    /* tighten link spacing */
+    font-size: 0.95rem;              /* slightly smaller text */
+  }
+
+  /* Add a little top margin to page so content clears the shorter header */
+  .about {
+    margin-top: 70px; /* equals or slightly more than header height */
+  }
+</style>
+
+<!-- About Section -->
+<section class="about pt-5" style="background: linear-gradient(to right, #fff0f0, #ffecec);">
+  <div class="container mt-5" data-aos="fade-up">
+    <div class="row align-items-center">
+      
+      <!-- About Text -->
+      <div class="col-lg-6">
+        <h2 class="mb-4">Who We Are ?</h2>
+        <p class="lead">
+          At <strong>N-Y-N Apparel</strong>, we believe fashion should be stylish, affordable, and accessible to everyone. 
+          Our goal is to provide clothing that combines comfort with modern trends, making you look and feel confident. 
+        </p>
+        <p>
+          From everyday essentials to standout pieces, we deliver collections that are versatile and long-lasting. 
+          With fast delivery, secure payments, and friendly support, we are committed to offering you a seamless shopping experience. 
+        </p>
+      </div>
+
+      <!-- About Image -->
+      <div class="col-lg-6 text-center">
+        <img src="{% static 'assets/img/about.png' %}" alt="About N-Y-N Apparel" class="img-fluid rounded shadow">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Mission / Vision / Values -->
+<section class="mission py-5 bg-light">
+  <div class="container" data-aos="fade-up">
+    <div class="row text-center">
+      <div class="col-md-4">
+        <i class="bi bi-heart-fill text-danger fs-1"></i>
+        <h4 class="mt-3">Our Mission</h4>
+        <p>To bring stylish, high-quality apparel that inspires confidence and individuality.</p>
+      </div>
+      <div class="col-md-4">
+        <i class="bi bi-globe2 text-primary fs-1"></i>
+        <h4 class="mt-3">Our Vision</h4>
+        <p>To become a trusted clothing brand known for comfort, quality, and modern style worldwide.</p>
+      </div>
+      <div class="col-md-4">
+        <i class="bi bi-people-fill text-success fs-1"></i>
+        <h4 class="mt-3">Our Values</h4>
+        <p>Customer-first, sustainability, innovation, and passion for fashion.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="why-us py-5">
+  <div class="container" data-aos="fade-up">
+    <h2 class="text-center mb-4">Why Choose N-Y-N Apparel?</h2>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="p-4 shadow-sm h-100 rounded bg-white text-center">
+          <i class="bi bi-truck fs-1 text-danger"></i>
+          <h5 class="mt-3">Fast & Reliable Delivery</h5>
+          <p>Get your favorite outfits delivered quickly and securely to your doorstep.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 shadow-sm h-100 rounded bg-white text-center">
+          <i class="bi bi-shield-lock fs-1 text-primary"></i>
+          <h5 class="mt-3">Secure Shopping</h5>
+          <p>Enjoy a smooth shopping experience with secure payments and easy returns.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 shadow-sm h-100 rounded bg-white text-center">
+          <i class="bi bi-star-fill fs-1 text-warning"></i>
+          <h5 class="mt-3">Quality Guaranteed</h5>
+          <p>Every piece is carefully crafted with quality fabrics to ensure durability and comfort.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock content %}

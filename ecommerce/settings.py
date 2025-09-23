@@ -38,8 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_mongoengine',
-    'django_mongoengine.mongo_admin', 
     'ecommerceapp',
     'authen',
 ]
@@ -157,14 +155,7 @@ MESSAGE_TAGS = {
 }
 
 # settings.py
-MONGODB_DATABASES = {
-    "default": {
-        "name": "Project",
-        "host": "localhost",
-        "port": 27017,
-       
-    }
-}
+
 
 
 
