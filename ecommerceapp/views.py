@@ -30,29 +30,37 @@ KHALTI_MODE = 'test'
 # MAIN PAGES
 # ==========================================
 def index(request):
-    """Home page with featured products"""
+    """Home page with featured products - All categories separate, New Arrivals shows 8 newest"""
     # Get all products
     all_products = Product.objects.all()
     
-    # Get new arrivals
-    new_arrivals = Product.objects.filter(is_new=True)[:4]
+    # Get ONLY 8 new arrivals (limited, these will ONLY appear in new arrivals filter)
+    new_arrivals = Product.objects.filter(is_new=True).order_by('-id')[:8]
     
-    # Simple grouping by category field directly
+    # Group products by their actual category
     products_by_category = {}
     
+    # Add new arrivals as a separate filter category (only these 8 products)
+    products_by_category['new-arrival'] = list(new_arrivals)
+    
+    # Add ALL products to their respective category filters (including new arrivals)
     for product in all_products:
         # Use the exact category from database
         # Convert to lowercase and replace spaces with hyphens for CSS class
         category_key = product.category.lower().replace(' ', '-')
         
+        # Normalize category names to match filter buttons
+        if category_key in ['kids', 'kids wear', 'kids_wear', 'kidswear', 'kids-wear']:
+            category_key = 'kids-wear'
+        elif category_key in ['new-arrivals', 'new arrival', 'new_arrivals']:
+            # Skip products with "New Arrivals" as their actual category
+            # (they should be categorized as Mens/Womens/Kids/Accessories instead)
+            continue
+        
         if category_key not in products_by_category:
             products_by_category[category_key] = []
         
         products_by_category[category_key].append(product)
-    
-    # Also add new arrivals as a separate category
-    if new_arrivals:
-        products_by_category['new-arrival'] = list(new_arrivals)
     
     context = {
         'products': all_products[:8],
@@ -63,9 +71,12 @@ def index(request):
     
     # Debug: Print to console to verify
     print(f"Total products: {all_products.count()}")
+    print(f"New arrivals (limited to 8): {len(new_arrivals)}")
     print(f"Categories found: {list(products_by_category.keys())}")
     for cat, prods in products_by_category.items():
         print(f"  {cat}: {len(prods)} products")
+        if cat == 'kids-wear':
+            print(f"    Kids products: {[p.name for p in prods]}")
     
     return render(request, 'index.html', context)
 

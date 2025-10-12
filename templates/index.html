@@ -42,7 +42,13 @@
     <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="100">
       {% for slug, products in products_by_category.items %}
         {% for product in products %}
-          <div class="col-md-3 isotope-item {{ slug|slugify }}{% if product.is_new %} new-arrival{% endif %}"
+          {% comment %}
+          Products can have multiple classes:
+          - Their category class (mens, womens, kids-wear, accessories)
+          - AND "new-arrival" class if they're in the new arrivals list
+          This allows filtering by both category and new arrivals
+          {% endcomment %}
+          <div class="col-md-3 isotope-item {{ slug }}{% if slug != 'new-arrival' and product.is_new %} new-arrival{% endif %}"
                data-product-id="{{ product.id }}"
                data-product-name="{{ product.name }}"
                data-product-price="{{ product.price }}"
@@ -131,9 +137,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Isotope Filtering ---
   const grid = document.querySelector('.isotope-container');
   const iso = new Isotope(grid, { itemSelector: '.isotope-item', layoutMode: 'fitRows' });
+  
   document.querySelectorAll('.portfolio-filters li').forEach(btn => {
     btn.addEventListener('click', () => {
-      iso.arrange({ filter: btn.getAttribute('data-filter') });
+      const filterValue = btn.getAttribute('data-filter');
+      iso.arrange({ filter: filterValue });
       document.querySelectorAll('.portfolio-filters li').forEach(el => el.classList.remove('filter-active'));
       btn.classList.add('filter-active');
     });
@@ -159,6 +167,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateCartDisplay(){
     const countEl = document.getElementById('cart-count');
     const dropdown = document.getElementById('cart-items-dropdown');
+    
+    if (!countEl || !dropdown) {
+      console.warn('Cart elements not found in DOM');
+      return;
+    }
+    
     dropdown.innerHTML = '';
     let sum = 0;
     
@@ -226,19 +240,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const qtyMinus = document.getElementById('qty-minus');
   const modalQty = document.getElementById('modal-qty');
 
-  qtyPlus.addEventListener('click', () => { 
-    if (currentQty < 99) { // Set reasonable limit
-      currentQty++; 
-      modalQty.innerText = currentQty; 
-    }
-  });
-  
-  qtyMinus.addEventListener('click', () => { 
-    if(currentQty > 1) {
-      currentQty--; 
-      modalQty.innerText = currentQty; 
-    }
-  });
+  if (qtyPlus && qtyMinus && modalQty) {
+    qtyPlus.addEventListener('click', () => { 
+      if (currentQty < 99) {
+        currentQty++; 
+        modalQty.innerText = currentQty; 
+      }
+    });
+    
+    qtyMinus.addEventListener('click', () => { 
+      if(currentQty > 1) {
+        currentQty--; 
+        modalQty.innerText = currentQty; 
+      }
+    });
+  }
 
   function renderStars(container, rating){
     container.innerHTML = '';
@@ -258,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const newRating = i-1 + half;
         container.dataset.rating = newRating;
         renderStars(container,newRating);
-        alert(`You rated ${newRating} star(s)`); // Replace with server call
+        alert(`You rated ${newRating} star(s)`);
       });
       container.appendChild(star);
     }
@@ -266,8 +282,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('.product-card').forEach(card => {
     card.addEventListener('click', () => {
-      // Get data from parent div (isotope-item)
       const parentDiv = card.closest('.isotope-item');
+      
+      if (!parentDiv) {
+        console.error('Parent isotope-item not found');
+        return;
+      }
+      
       const productId = parentDiv.dataset.productId;
       const name = parentDiv.dataset.productName;
       const category = parentDiv.dataset.productCategory;
@@ -291,12 +312,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Reset quantity
       currentQty = 1;
-      modalQty.innerText = currentQty;
+      if (modalQty) modalQty.innerText = currentQty;
 
       // Render sizes
       const sizeContainer = document.getElementById('modal-sizes');
       sizeContainer.innerHTML = '';
-      const sizes = sizesString.split(',').map(s => s.trim());
+      const sizes = sizesString.split(',').map(s => s.trim()).filter(s => s);
       
       sizes.forEach(s => {
         const btn = document.createElement('div');
@@ -309,80 +330,102 @@ document.addEventListener('DOMContentLoaded', () => {
         sizeContainer.appendChild(btn);
       });
 
+      // Auto-select first size if only one available
+      if (sizes.length === 1) {
+        sizeContainer.querySelector('.size-btn')?.classList.add('active');
+      }
+
       new bootstrap.Modal(document.getElementById('productModal')).show();
     });
   });
 
   // --- Add to Cart with Proper Product ID ---
-  document.getElementById('modal-addcart').addEventListener('click', () => {
-    if (!currentProductId) {
-      alert('Product information not available!');
-      return;
-    }
-    
-    const name = document.getElementById('modal-name').innerText;
-    const priceText = document.getElementById('modal-price').innerText.replace(/Price:Rs\.\s*/i, '');
-    const price = parseFloat(priceText) || 0;
-    
-    if (price <= 0) {
-      alert('Invalid product price!');
-      return;
-    }
-    
-    const activeSize = document.querySelector('#modal-sizes .size-btn.active');
-    if(!activeSize){ 
-      alert('Please select a size!'); 
-      return; 
-    }
-    const size = activeSize.innerText;
+  const addToCartBtn = document.getElementById('modal-addcart');
+  if (addToCartBtn) {
+    addToCartBtn.addEventListener('click', () => {
+      if (!currentProductId) {
+        alert('Product information not available!');
+        return;
+      }
+      
+      const name = document.getElementById('modal-name').innerText;
+      const priceText = document.getElementById('modal-price').innerText.replace(/Price:Rs\.\s*/i, '');
+      const price = parseFloat(priceText) || 0;
+      
+      if (price <= 0) {
+        alert('Invalid product price!');
+        return;
+      }
+      
+      const activeSize = document.querySelector('#modal-sizes .size-btn.active');
+      if(!activeSize){ 
+        alert('Please select a size!'); 
+        return; 
+      }
+      const size = activeSize.innerText;
 
-    // Use actual product ID instead of modal_name format
-    const cartId = currentProductId.toString();
-    
-    // Validate data before adding to cart
-    const cartItem = [currentQty, name, price, size, document.getElementById('modal-img').src];
-    
-    if(cart[cartId]) {
-      cart[cartId][0] = parseInt(cart[cartId][0]) + currentQty;
-    } else {
-      cart[cartId] = cartItem;
-    }
+      // Use actual product ID instead of modal_name format
+      const cartId = currentProductId.toString();
+      
+      // Validate data before adding to cart
+      const cartItem = [currentQty, name, price, size, document.getElementById('modal-img').src];
+      
+      if(cart[cartId]) {
+        cart[cartId][0] = parseInt(cart[cartId][0]) + currentQty;
+      } else {
+        cart[cartId] = cartItem;
+      }
 
-    localStorage.setItem('cart', JSON.stringify(cart));
-    updateCartDisplay();
-    bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
-    
-    // Show success message
-    alert(`${name} added to cart successfully!`);
-  });
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartDisplay();
+      
+      const modalInstance = bootstrap.Modal.getInstance(document.getElementById('productModal'));
+      if (modalInstance) modalInstance.hide();
+      
+      // Show success message
+      alert(`${name} added to cart successfully!`);
+    });
+  }
 
   // --- Buy Now Button ---
-  document.getElementById('modal-buynow').addEventListener('click', () => {
-    if (!currentProductId) {
-      alert('Product information not available!');
-      return;
-    }
-    
-    const activeSize = document.querySelector('#modal-sizes .size-btn.active');
-    if(!activeSize){ 
-      alert('Please select a size!'); 
-      return; 
-    }
-    
-    // Add to cart first
-    document.getElementById('modal-addcart').click();
-    
-    // Then redirect to checkout
-    setTimeout(() => {
-      window.location.href = '/checkout';
-    }, 500);
-  });
+  const buyNowBtn = document.getElementById('modal-buynow');
+  if (buyNowBtn) {
+    buyNowBtn.addEventListener('click', () => {
+      if (!currentProductId) {
+        alert('Product information not available!');
+        return;
+      }
+      
+      const activeSize = document.querySelector('#modal-sizes .size-btn.active');
+      if(!activeSize){ 
+        alert('Please select a size!'); 
+        return; 
+      }
+      
+      // Add to cart first
+      const addCartEvent = new Event('click');
+      addToCartBtn.dispatchEvent(addCartEvent);
+      
+      // Then redirect to checkout
+      setTimeout(() => {
+        window.location.href = '/checkout';
+      }, 500);
+    });
+  }
 
   // --- Modal image lightbox ---
-  document.getElementById('modal-img').addEventListener('click', () => {
-    const lightbox = GLightbox({elements:[{href:document.getElementById('modal-img').src,type:'image'}]});
-    lightbox.open();
-  });
+  const modalImg = document.getElementById('modal-img');
+  if (modalImg) {
+    modalImg.addEventListener('click', () => {
+      const lightbox = GLightbox({
+        elements:[{
+          href: modalImg.src,
+          type: 'image'
+        }]
+      });
+      lightbox.open();
+    });
+  }
 
 });
 </script>
