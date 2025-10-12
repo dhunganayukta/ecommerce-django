@@ -31,7 +31,7 @@
   <div class="container">
     <!-- Filters -->
     <ul class="portfolio-filters isotope-filters" data-aos="fade-up" data-aos-delay="100">
-      <li data-filter="*" class="filter-active">New Arrivals</li>
+      <li data-filter=".new-arrival" class="filter-active">New Arrivals</li>
       <li data-filter=".mens">Mens</li>
       <li data-filter=".womens">Womens</li>
       <li data-filter=".kids-wear">Kids Wear</li>
@@ -42,10 +42,16 @@
     <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="100">
       {% for slug, products in products_by_category.items %}
         {% for product in products %}
-          <div class="col-md-3 isotope-item {{ slug|slugify }}">
-            <div class="card product-card h-100 border-0 shadow-sm position-relative"
-                 data-description="{{ product.description|default:'Elegant'|escape }}"
-                 data-rating="{{ product.rating|default:0 }}">
+          <div class="col-md-3 isotope-item {{ slug|slugify }}{% if product.is_new %} new-arrival{% endif %}"
+               data-product-id="{{ product.id }}"
+               data-product-name="{{ product.name }}"
+               data-product-price="{{ product.price }}"
+               data-product-category="{{ product.category }}"
+               data-product-image="{{ product.image.url }}"
+               data-product-sizes="{% if product.size %}{{ product.size }}{% else %}S,M,L,XL,XXL{% endif %}"
+               data-description="{{ product.description|default:'Elegant'|escape }}"
+               data-rating="{{ product.rating|default:0 }}">
+            <div class="card product-card h-100 border-0 shadow-sm position-relative">
               {% if product.is_new %}
                 <span class="badge bg-danger position-absolute top-0 start-0 m-2">New</span>
               {% endif %}
@@ -133,25 +139,52 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- Cart Handling ---
+  // --- Cart Handling with Better Data Validation ---
   let cart = JSON.parse(localStorage.getItem('cart') || '{}');
+  
+  // Clean up any existing invalid cart data
+  function cleanCart() {
+    for (let key in cart) {
+      const item = cart[key];
+      if (!Array.isArray(item) || item.length < 5) {
+        console.warn('Removing invalid cart item:', key, item);
+        delete cart[key];
+      }
+    }
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }
+  
+  cleanCart();
+
   function updateCartDisplay(){
     const countEl = document.getElementById('cart-count');
     const dropdown = document.getElementById('cart-items-dropdown');
     dropdown.innerHTML = '';
     let sum = 0;
+    
     for(let id in cart){
-      const [qty,name,price,size,img] = cart[id];
-      sum += qty;
+      const [qty, name, price, size, img] = cart[id];
+      
+      // Validate cart item data
+      if (!qty || !name || !price) {
+        console.warn('Invalid cart item data:', id, cart[id]);
+        delete cart[id];
+        continue;
+      }
+      
+      const numQty = parseInt(qty) || 1;
+      const numPrice = parseFloat(price) || 0;
+      
+      sum += numQty;
       const li = document.createElement('li');
       li.classList.add('mb-2');
       li.innerHTML = `
         <div class="cart-item d-flex align-items-center gap-2">
-          <img src="${img}" class="cart-img" style="width:50px;height:50px;object-fit:cover;cursor:pointer;">
+          <img src="${img || '/static/assets/img/placeholder.png'}" class="cart-img" style="width:50px;height:50px;object-fit:cover;cursor:pointer;">
           <div>
             <strong>${name}</strong><br>
-            <small>Size: ${size} | Qty: ${qty}</small><br>
-            <span>Rs. ${price}</span>
+            <small>Size: ${size || 'N/A'} | Qty: ${numQty}</small><br>
+            <span>Rs. ${numPrice.toFixed(2)}</span>
           </div>
           <button class="btn btn-sm btn-outline-danger ms-auto remove-item">✕</button>
         </div>`;
@@ -162,6 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       dropdown.appendChild(li);
     }
+    
     if(sum===0) dropdown.innerHTML='<li class="text-center py-3">Cart is empty</li>';
     else {
       const actionLi = document.createElement('li');
@@ -171,27 +205,51 @@ document.addEventListener('DOMContentLoaded', () => {
       dropdown.appendChild(actionLi);
     }
     countEl.innerText = sum;
+    
+    // Update localStorage with cleaned cart
+    localStorage.setItem('cart', JSON.stringify(cart));
   }
-  window.clearCart = function(){ cart={}; localStorage.removeItem('cart'); updateCartDisplay(); }
+  
+  window.clearCart = function(){ 
+    cart={}; 
+    localStorage.removeItem('cart'); 
+    updateCartDisplay(); 
+  }
+  
   updateCartDisplay();
 
   // --- Modal Handling ---
   let currentQty = 1;
+  let currentProductId = null;
+  
   const qtyPlus = document.getElementById('qty-plus');
   const qtyMinus = document.getElementById('qty-minus');
   const modalQty = document.getElementById('modal-qty');
 
-  qtyPlus.addEventListener('click', () => { currentQty++; modalQty.innerText = currentQty; });
-  qtyMinus.addEventListener('click', () => { if(currentQty>1) currentQty--; modalQty.innerText = currentQty; });
+  qtyPlus.addEventListener('click', () => { 
+    if (currentQty < 99) { // Set reasonable limit
+      currentQty++; 
+      modalQty.innerText = currentQty; 
+    }
+  });
+  
+  qtyMinus.addEventListener('click', () => { 
+    if(currentQty > 1) {
+      currentQty--; 
+      modalQty.innerText = currentQty; 
+    }
+  });
 
   function renderStars(container, rating){
     container.innerHTML = '';
+    const numRating = parseFloat(rating) || 0;
+    
     for(let i=1;i<=5;i++){
       const star = document.createElement('span');
       star.classList.add('star');
       star.dataset.value = i;
-      if(i <= Math.floor(rating)) star.textContent='★';
-      else if(i - rating === 0.5) star.textContent='⯨';
+      if(i <= Math.floor(numRating)) star.textContent='★';
+      else if(i - numRating === 0.5) star.textContent='⯨';
       else star.textContent='☆';
       star.addEventListener('click',(e)=>{
         const rect = e.target.getBoundingClientRect();
@@ -208,28 +266,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('.product-card').forEach(card => {
     card.addEventListener('click', () => {
-      const img = card.querySelector('.product-img').src;
-      const name = card.querySelector('.card-title').innerText;
-      const category = card.querySelector('.card-text.text-muted').innerText;
-      const price = card.querySelector('.price-highlight').innerText;
-      const description = card.dataset.description || 'Elegant';
-      const rating = parseFloat(card.dataset.rating) || 0;
-      const sizes = card.dataset.sizes ? card.dataset.sizes.split(',') : ['S','M','L','XL','XXL'];
-
+      // Get data from parent div (isotope-item)
+      const parentDiv = card.closest('.isotope-item');
+      const productId = parentDiv.dataset.productId;
+      const name = parentDiv.dataset.productName;
+      const category = parentDiv.dataset.productCategory;
+      const price = parentDiv.dataset.productPrice;
+      const img = parentDiv.dataset.productImage;
+      const sizesString = parentDiv.dataset.productSizes || 'S,M,L,XL,XXL';
+      const description = parentDiv.dataset.description || 'Elegant';
+      const rating = parseFloat(parentDiv.dataset.rating) || 0;
+      
+      // Store current product ID for cart operations
+      currentProductId = productId;
+      
+      // Update modal content
       document.getElementById('modal-img').src = img;
       document.getElementById('modal-name').innerText = name;
-      document.getElementById('modal-category').innerText = category;
-      document.getElementById('modal-price').innerText = price;
+      document.getElementById('modal-category').innerText = `Category: ${category}`;
+      document.getElementById('modal-price').innerText = `Price:Rs. ${price}`;
       document.getElementById('modal-description').innerText = description;
 
       renderStars(document.getElementById('modal-rating'), rating);
 
+      // Reset quantity
       currentQty = 1;
       modalQty.innerText = currentQty;
 
       // Render sizes
       const sizeContainer = document.getElementById('modal-sizes');
       sizeContainer.innerHTML = '';
+      const sizes = sizesString.split(',').map(s => s.trim());
+      
       sizes.forEach(s => {
         const btn = document.createElement('div');
         btn.classList.add('size-btn');
@@ -245,21 +313,69 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- Add to Cart ---
+  // --- Add to Cart with Proper Product ID ---
   document.getElementById('modal-addcart').addEventListener('click', () => {
+    if (!currentProductId) {
+      alert('Product information not available!');
+      return;
+    }
+    
     const name = document.getElementById('modal-name').innerText;
-    const price = document.getElementById('modal-price').innerText.replace('Rs. ','');
+    const priceText = document.getElementById('modal-price').innerText.replace(/Price:Rs\.\s*/i, '');
+    const price = parseFloat(priceText) || 0;
+    
+    if (price <= 0) {
+      alert('Invalid product price!');
+      return;
+    }
+    
     const activeSize = document.querySelector('#modal-sizes .size-btn.active');
-    if(!activeSize){ alert('Please select a size!'); return; }
+    if(!activeSize){ 
+      alert('Please select a size!'); 
+      return; 
+    }
     const size = activeSize.innerText;
 
-    const id = 'modal_' + name.replace(/\s/g,'_');
-    if(cart[id]) cart[id][0] += currentQty;
-    else cart[id] = [currentQty,name,price,size,document.getElementById('modal-img').src];
+    // Use actual product ID instead of modal_name format
+    const cartId = currentProductId.toString();
+    
+    // Validate data before adding to cart
+    const cartItem = [currentQty, name, price, size, document.getElementById('modal-img').src];
+    
+    if(cart[cartId]) {
+      cart[cartId][0] = parseInt(cart[cartId][0]) + currentQty;
+    } else {
+      cart[cartId] = cartItem;
+    }
 
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartDisplay();
     bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+    
+    // Show success message
+    alert(`${name} added to cart successfully!`);
+  });
+
+  // --- Buy Now Button ---
+  document.getElementById('modal-buynow').addEventListener('click', () => {
+    if (!currentProductId) {
+      alert('Product information not available!');
+      return;
+    }
+    
+    const activeSize = document.querySelector('#modal-sizes .size-btn.active');
+    if(!activeSize){ 
+      alert('Please select a size!'); 
+      return; 
+    }
+    
+    // Add to cart first
+    document.getElementById('modal-addcart').click();
+    
+    // Then redirect to checkout
+    setTimeout(() => {
+      window.location.href = '/checkout';
+    }, 500);
   });
 
   // --- Modal image lightbox ---

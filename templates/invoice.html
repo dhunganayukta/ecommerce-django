@@ -1,0 +1,1430 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Invoice #{{ order.id }}{% endblock title %}
+{% block body_class %}invoice-page{% endblock body_class %}
+
+{% block content %}
+<main class="main bg-light" style="background:linear-gradient(135deg,#f0f4f8,#d9e2ec);min-height:100vh;padding-top:20px;">
+  <div class="container">
+    
+    <!-- Flash messages -->
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show modern-alert" role="alert">
+        <div class="alert-content">
+          <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle-fill{% elif message.tags == 'warning' %}exclamation-circle-fill{% else %}info-circle-fill{% endif %} me-2"></i>
+          <strong>{{ message }}</strong>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+
+    <!-- Action Bar - Hidden on Print -->
+    <div class="action-bar no-print">
+      <div class="d-flex justify-content-between align-items-center">
+        <a href="{% url 'order_history' %}" class="btn-back">
+          <i class="bi bi-arrow-left me-2"></i>Back to Orders
+        </a>
+        <div class="action-buttons">
+          <button class="btn-action secondary" onclick="printInvoice()">
+            <i class="bi bi-printer me-2"></i>Print Invoice
+          </button>
+          <button class="btn-action secondary" onclick="downloadPDF()">
+            <i class="bi bi-file-pdf me-2"></i>Download PDF
+          </button>
+          <button class="btn-action primary" onclick="emailInvoice()">
+            <i class="bi bi-envelope me-2"></i>Email Invoice
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoice Container -->
+    <div class="invoice-container" id="invoice-content">
+      
+      <!-- Invoice Header -->
+      <div class="invoice-header">
+        <div class="row align-items-start">
+          <div class="col-md-6">
+            <div class="company-info">
+              <h1 class="company-name">N-Y-N Apparel</h1>
+              <p class="company-tagline">Premium Fashion & Lifestyle</p>
+              <div class="company-details">
+                <p><i class="bi bi-geo-alt me-2"></i>123 Fashion Street, Kathmandu, Nepal</p>
+                <p><i class="bi bi-telephone me-2"></i>+977 9876543210</p>
+                <p><i class="bi bi-envelope me-2"></i>info@nynapparel.com</p>
+                <p><i class="bi bi-globe me-2"></i>www.nynapparel.com</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <div class="invoice-badge">
+              <h2 class="invoice-title">INVOICE</h2>
+              <div class="invoice-number">#{{ order.id }}</div>
+              <div class="invoice-status status-{% if order.status == 'DELIVERED' %}delivered{% elif order.status == 'SHIPPED' %}shipped{% elif order.status == 'PROCESSING' %}processing{% else %}pending{% endif %}">
+                {{ order.get_status_display }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoice Info Section -->
+      <div class="invoice-info-section">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="info-block">
+              <h6 class="info-title">Bill To:</h6>
+              <div class="info-content">
+                <p class="customer-name">{{ order.customer_name }}</p>
+                <p>{{ order.address1 }}</p>
+                {% if order.address2 %}
+                  <p>{{ order.address2 }}</p>
+                {% endif %}
+                <p>{{ order.city }}, {{ order.state }}</p>
+                <p>{{ order.zip_code }}</p>
+                <p class="mt-2">
+                  <i class="bi bi-envelope me-1"></i>{{ order.customer_email }}
+                </p>
+                <p>
+                  <i class="bi bi-telephone me-1"></i>{{ order.phone }}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="info-block">
+              <h6 class="info-title">Ship To:</h6>
+              <div class="info-content">
+                <p class="customer-name">{{ order.customer_name }}</p>
+                <p>{{ order.address1 }}</p>
+                {% if order.address2 %}
+                  <p>{{ order.address2 }}</p>
+                {% endif %}
+                <p>{{ order.city }}, {{ order.state }}</p>
+                <p>{{ order.zip_code }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="info-block">
+              <h6 class="info-title">Invoice Details:</h6>
+              <div class="info-content">
+                <div class="detail-row">
+                  <span class="detail-label">Invoice Date:</span>
+                  <span class="detail-value">{{ order.order_date|date:"M d, Y" }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Order Date:</span>
+                  <span class="detail-value">{{ order.order_date|date:"M d, Y" }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Payment Method:</span>
+                  <span class="detail-value">{{ order.payment_method|default:"Cash on Delivery" }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Order Status:</span>
+                  <span class="detail-value status-text">{{ order.get_status_display }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoice Items Table -->
+      <div class="invoice-table-section">
+        <h6 class="section-title">
+          <i class="bi bi-list-ul me-2"></i>Order Items
+        </h6>
+        <div class="table-responsive">
+          <table class="invoice-table">
+            <thead>
+              <tr>
+                <th class="text-center" width="5%">#</th>
+                <th width="40%">Item Description</th>
+                <th class="text-center" width="15%">Quantity</th>
+                <th class="text-right" width="20%">Unit Price</th>
+                <th class="text-right" width="20%">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in order_items %}
+                <tr>
+                  <td class="text-center">{{ forloop.counter }}</td>
+                  <td>
+                    <div class="item-description">
+                      <strong>{{ item.product.name }}</strong>
+                      <div class="item-meta">
+                        {% if item.product.category %}
+                          <span class="item-category">{{ item.product.category }}</span>
+                        {% endif %}
+                        {% if item.size %}
+                          <span class="item-size">Size: {{ item.size }}</span>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-center">{{ item.quantity }}</td>
+                  <td class="text-right">Rs. {{ item.product.price }}</td>
+                  <td class="text-right amount-cell">Rs. {{ item.subtotal }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center py-4">
+                    <i class="bi bi-exclamation-circle me-2"></i>No items found
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Invoice Summary -->
+      <div class="invoice-summary-section">
+        <div class="row justify-content-end">
+          <div class="col-md-5">
+            <div class="summary-box">
+              <div class="summary-row">
+                <span class="summary-label">Subtotal:</span>
+                <span class="summary-value">Rs. {{ order.amount }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">Shipping & Handling:</span>
+                <span class="summary-value free-text">Free</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">Tax (Included):</span>
+                <span class="summary-value">Rs. 0.00</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">Discount:</span>
+                <span class="summary-value discount-text">- Rs. 0.00</span>
+              </div>
+              <hr class="summary-divider">
+              <div class="summary-row total-row">
+                <span class="summary-label">Total Amount:</span>
+                <span class="summary-value total-amount">Rs. {{ order.amount }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">Amount Paid:</span>
+                <span class="summary-value paid-amount">Rs. {% if order.status == 'DELIVERED' or order.status == 'SHIPPED' or order.status == 'PROCESSING' %}{{ order.amount }}{% else %}0.00{% endif %}</span>
+              </div>
+              <div class="summary-row balance-row">
+                <span class="summary-label">Balance Due:</span>
+                <span class="summary-value balance-amount">Rs. {% if order.status == 'PENDING' %}{{ order.amount }}{% else %}0.00{% endif %}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Information -->
+      {% if order.status == 'PENDING' %}
+        <div class="payment-info-section">
+          <h6 class="section-title">
+            <i class="bi bi-credit-card me-2"></i>Payment Information
+          </h6>
+          <div class="payment-note alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Payment Pending:</strong> This invoice is awaiting payment. Please complete your payment to process the order.
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Notes & Terms -->
+      <div class="notes-section">
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="section-title">
+              <i class="bi bi-chat-left-text me-2"></i>Notes
+            </h6>
+            <div class="notes-content">
+              <p>Thank you for shopping with N-Y-N Apparel! We appreciate your business.</p>
+              <p>If you have any questions about this invoice, please contact us at:</p>
+              <p><strong>Email:</strong> support@nynapparel.com</p>
+              <p><strong>Phone:</strong> +977 9876543210</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <h6 class="section-title">
+              <i class="bi bi-file-text me-2"></i>Terms & Conditions
+            </h6>
+            <div class="terms-content">
+              <ul>
+                <li>Payment is due within 7 days of invoice date</li>
+                <li>Late payments may incur additional charges</li>
+                <li>Returns accepted within 30 days with receipt</li>
+                <li>Items must be in original condition</li>
+                <li>Shipping charges are non-refundable</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoice Footer -->
+      <div class="invoice-footer">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <div class="authorized-signature">
+              <div class="signature-line"></div>
+              <p class="signature-label">Authorized Signature</p>
+            </div>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <div class="footer-info">
+              <p class="thank-you-text">Thank you for your business!</p>
+              <p class="invoice-generated">
+                Invoice generated on {{ order.order_date|date:"F d, Y" }}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="footer-branding">
+          <hr>
+          <p class="text-center mb-0">
+            <strong>N-Y-N Apparel</strong> | Premium Fashion & Lifestyle
+            <br>
+            <small>www.nynapparel.com | info@nynapparel.com | +977 9876543210</small>
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+{% endblock content %}
+
+{% block body %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+/* Variables */
+:root {
+  --primary-color: #2563eb;
+  --secondary-color: #1e40af;
+  --accent-color: #1e3a8a;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --info-color: #3b82f6;
+  --light-gray: #f8fafc;
+  --medium-gray: #e2e8f0;
+  --dark-gray: #64748b;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-radius: 16px;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Base Styling */
+body.invoice-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body.invoice-page .navbar {
+  background-color: #000 !important;
+  padding-top: .25rem;
+  padding-bottom: .25rem;
+  min-height: 20px;
+}
+
+body.invoice-page .navbar .navbar-brand { 
+  font-size: 1.2rem; 
+}
+
+body.invoice-page .navbar .nav-link { 
+  font-size: .9rem; 
+  color: #fff !important; 
+}
+
+body.invoice-page .navbar .nav-link:hover { 
+  color: #ddd !important; 
+}
+
+/* Alert System */
+.modern-alert {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 1rem;
+  backdrop-filter: blur(10px);
+  border-left: 4px solid;
+  animation: slideInDown 0.3s ease-out;
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1050;
+  min-width: 300px;
+  max-width: 500px;
+}
+
+.modern-alert.alert-success {
+  background: linear-gradient(135deg, rgba(220, 252, 231, 0.95), rgba(187, 247, 208, 0.95));
+  color: #047857;
+  border-left-color: var(--success-color);
+}
+
+.modern-alert.alert-warning {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.95), rgba(252, 211, 77, 0.95));
+  color: #92400e;
+  border-left-color: var(--warning-color);
+}
+
+.alert-content {
+  display: flex;
+  align-items: center;
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translate3d(-50%, -100%, 0); }
+  to { opacity: 1; transform: translate3d(-50%, 0, 0); }
+}
+
+/* Action Bar */
+.action-bar {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  margin-top: 6rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: white;
+  color: var(--text-primary);
+  border: 2px solid var(--medium-gray);
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-action.primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+}
+
+.btn-action.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-action.secondary {
+  background: white;
+  color: var(--text-primary);
+  border-color: var(--medium-gray);
+}
+
+.btn-action.secondary:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* Invoice Container */
+.invoice-container {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  padding: 3rem;
+  margin-bottom: 3rem;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Invoice Header */
+.invoice-header {
+  padding-bottom: 2rem;
+  border-bottom: 3px solid var(--primary-color);
+  margin-bottom: 2rem;
+}
+
+.company-info {
+  margin-bottom: 1rem;
+}
+
+.company-name {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.25rem;
+}
+
+.company-tagline {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.company-details p {
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.invoice-badge {
+  text-align: right;
+}
+
+.invoice-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  letter-spacing: 2px;
+}
+
+.invoice-number {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.invoice-status {
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.status-delivered {
+  background: linear-gradient(135deg, #d1fae5, var(--success-color));
+  color: #065f46;
+}
+
+.status-shipped {
+  background: linear-gradient(135deg, #e0e7ff, #8b5cf6);
+  color: #5b21b6;
+}
+
+.status-processing {
+  background: linear-gradient(135deg, #dbeafe, var(--info-color));
+  color: #1e40af;
+}
+
+.status-pending {
+  background: linear-gradient(135deg, #fef3cd, #fbbf24);
+  color: #92400e;
+}
+
+/* Invoice Info Section */
+.invoice-info-section {
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: var(--light-gray);
+  border-radius: 12px;
+}
+
+.info-block {
+  margin-bottom: 1rem;
+}
+
+.info-title {
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+}
+
+.info-content {
+  color: var(--text-primary);
+}
+
+.info-content p {
+  margin-bottom: 0.25rem;
+  line-height: 1.6;
+}
+
+.customer-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem !important;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--medium-gray);
+}
+
+.detail-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.detail-value {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.status-text {
+  color: var(--primary-color);
+}
+
+/* Invoice Table */
+.invoice-table-section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.invoice-table thead {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+}
+
+.invoice-table th {
+  padding: 1rem;
+  font-weight: 600;
+  text-align: left;
+  border: none;
+}
+
+.invoice-table th.text-center {
+  text-align: center;
+}
+
+.invoice-table th.text-right {
+  text-align: right;
+}
+
+.invoice-table tbody tr {
+  border-bottom: 1px solid var(--medium-gray);
+  transition: background-color 0.3s ease;
+}
+
+.invoice-table tbody tr:hover {
+  background: var(--light-gray);
+}
+
+.invoice-table td {
+  padding: 1.25rem 1rem;
+  color: var(--text-primary);
+}
+
+.invoice-table td.text-center {
+  text-align: center;
+}
+
+.invoice-table td.text-right {
+  text-align: right;
+}
+
+.item-description strong {
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.item-meta {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.item-category,
+.item-size {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  padding: 0.25rem 0.75rem;
+  background: var(--light-gray);
+  border-radius: 50px;
+}
+
+.amount-cell {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Invoice Summary */
+.invoice-summary-section {
+  margin-bottom: 2rem;
+}
+
+.summary-box {
+  background: var(--light-gray);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 2px solid var(--medium-gray);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  font-size: 1rem;
+}
+
+.summary-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.summary-value {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.free-text {
+  color: var(--success-color);
+}
+
+.discount-text {
+  color: var(--danger-color);
+}
+
+.summary-divider {
+  border-color: var(--medium-gray);
+  margin: 1rem 0;
+}
+
+.total-row {
+  padding-top: 1rem;
+  border-top: 2px solid var(--medium-gray);
+}
+
+.total-row .summary-label,
+.total-row .summary-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.total-amount {
+  color: var(--primary-color);
+  font-size: 1.5rem !important;
+}
+
+.paid-amount {
+  color: var(--success-color);
+}
+
+.balance-row {
+  background: rgba(37, 99, 235, 0.1);
+  padding: 1rem;
+  margin-top: 0.5rem;
+  border-radius: 8px;
+}
+
+.balance-amount {
+  color: var(--danger-color);
+  font-size: 1.2rem;
+}
+
+/* Payment Info */
+.payment-info-section {
+  margin-bottom: 2rem;
+}
+
+.payment-note {
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid var(--warning-color);
+}
+
+/* Notes & Terms */
+.notes-section {
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: var(--light-gray);
+  border-radius: 12px;
+}
+
+.notes-content,
+.terms-content {
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.notes-content p {
+  margin-bottom: 0.5rem;
+}
+
+.terms-content ul {
+  list-style-position: inside;
+  padding-left: 0;
+}
+
+.terms-content li {
+  margin-bottom: 0.5rem;
+}
+
+/* Invoice Footer */
+.invoice-footer {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--medium-gray);
+}
+
+.authorized-signature {
+  margin-top: 3rem;
+}
+
+.signature-line {
+  width: 250px;
+  height: 2px;
+  background: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.signature-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.footer-info {
+  margin-top: 2rem;
+}
+
+.thank-you-text {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.invoice-generated {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.footer-branding {
+  margin-top: 2rem;
+  color: var(--text-secondary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .action-bar {
+    margin-top: 4rem;
+  }
+  
+  .action-bar .d-flex {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .invoice-container {
+    padding: 2rem 1.5rem;
+  }
+  
+  .company-name {
+    font-size: 2rem;
+  }
+  
+  .invoice-title {
+    font-size: 2rem;
+  }
+  
+  .invoice-badge {
+    text-align: left;
+    margin-top: 1rem;
+  }
+  
+  .invoice-table {
+    font-size: 0.85rem;
+  }
+  
+  .invoice-table th,
+  .invoice-table td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .item-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .signature-line {
+    width: 200px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background: white !important;
+  }
+  
+  .no-print,
+  .navbar,
+  .modern-alert,
+  .action-bar,
+  .btn,
+  button {
+    display: none !important;
+  }
+  
+  .invoice-container {
+    box-shadow: none !important;
+    padding: 0;
+    margin: 0;
+    max-width: 100%;
+  }
+  
+  .invoice-header,
+  .invoice-info-section,
+  .invoice-table-section,
+  .invoice-summary-section,
+  .notes-section,
+  .invoice-footer {
+    break-inside: avoid;
+  }
+  
+  .invoice-table {
+    page-break-inside: auto;
+  }
+  
+  .invoice-table tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  
+  .invoice-table thead {
+    display: table-header-group;
+  }
+  
+  .invoice-table tbody {
+    display: table-row-group;
+  }
+}
+</style>
+
+<script>
+// Enhanced JavaScript functionality
+function printInvoice() {
+  const button = event.target;
+  const originalText = button.innerHTML;
+  button.innerHTML = '<i class="bi bi-arrow-clockwise spin me-2"></i>Preparing...';
+  button.disabled = true;
+  
+  setTimeout(() => {
+    window.print();
+    button.innerHTML = originalText;
+    button.disabled = false;
+  }, 500);
+}
+
+function downloadPDF() {
+  const button = event.target;
+  const originalText = button.innerHTML;
+  button.innerHTML = '<i class="bi bi-arrow-clockwise spin me-2"></i>Generating...';
+  button.disabled = true;
+  
+  // Simulate PDF generation
+  setTimeout(() => {
+    showAlert('PDF generated successfully! Download started.', 'success');
+    button.innerHTML = originalText;
+    button.disabled = false;
+    
+    // In real implementation, this would trigger actual PDF download
+    // window.location.href = `/orders/{{ order.id }}/invoice/pdf/`;
+  }, 2000);
+}
+
+function emailInvoice() {
+  const button = event.target;
+  const originalText = button.innerHTML;
+  
+  const email = prompt('Enter email address to send invoice to:', '{{ order.customer_email }}');
+  
+  if (email) {
+    button.innerHTML = '<i class="bi bi-arrow-clockwise spin me-2"></i>Sending...';
+    button.disabled = true;
+    
+    // Simulate email sending
+    setTimeout(() => {
+      showAlert(`Invoice sent successfully to ${email}!`, 'success');
+      button.innerHTML = originalText;
+      button.disabled = false;
+      
+      // In real implementation, this would make an API call
+      // fetch('/orders/{{ order.id }}/invoice/email/', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'X-CSRFToken': '{{ csrf_token }}'
+      //   },
+      //   body: JSON.stringify({ email: email })
+      // });
+    }, 2000);
+  }
+}
+
+function showAlert(message, type = 'info') {
+  // Remove existing alerts
+  const existingAlerts = document.querySelectorAll('.modern-alert');
+  existingAlerts.forEach(alert => alert.remove());
+  
+  const alert = document.createElement('div');
+  alert.className = `alert alert-${type} alert-dismissible fade show modern-alert`;
+  alert.innerHTML = `
+    <div class="alert-content">
+      <i class="bi bi-${type === 'success' ? 'check-circle-fill' : type === 'error' ? 'exclamation-triangle-fill' : type === 'warning' ? 'exclamation-circle-fill' : 'info-circle-fill'} me-2"></i>
+      <strong>${message}</strong>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  `;
+  
+  document.body.appendChild(alert);
+  
+  // Auto-dismiss after 5 seconds
+  setTimeout(() => {
+    if (alert && alert.parentNode) {
+      alert.remove();
+    }
+  }, 5000);
+}
+
+// Spinning animation CSS
+const spinCSS = `
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .spin { animation: spin 1s linear infinite; }
+`;
+const styleSheet = document.createElement("style");
+styleSheet.innerText = spinCSS;
+document.head.appendChild(styleSheet);
+
+// Auto-hide alerts on page load
+document.addEventListener('DOMContentLoaded', function() {
+  const alerts = document.querySelectorAll('.modern-alert');
+  alerts.forEach(function(alert) {
+    setTimeout(function() {
+      if (alert && alert.parentNode) {
+        alert.remove();
+      }
+    }, 5000);
+  });
+  
+  // Smooth scroll behavior
+  document.documentElement.style.scrollBehavior = 'smooth';
+  
+  // Add keyboard shortcuts
+  document.addEventListener('keydown', function(e) {
+    // Ctrl+P or Cmd+P for print
+    if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+      e.preventDefault();
+      printInvoice();
+    }
+    
+    // Escape to close alerts
+    if (e.key === 'Escape') {
+      const alerts = document.querySelectorAll('.modern-alert');
+      alerts.forEach(alert => alert.remove());
+    }
+  });
+  
+  // Add print event listeners
+  window.addEventListener('beforeprint', function() {
+    console.log('Preparing to print invoice...');
+  });
+  
+  window.addEventListener('afterprint', function() {
+    console.log('Print job completed or cancelled');
+  });
+  
+  // Add visual feedback for button interactions
+  const buttons = document.querySelectorAll('button:not(.btn-close)');
+  buttons.forEach(button => {
+    button.addEventListener('click', function() {
+      this.style.transform = 'scale(0.98)';
+      setTimeout(() => {
+        this.style.transform = '';
+      }, 150);
+    });
+  });
+  
+  // Calculate and display additional info
+  const orderAmount = parseFloat('{{ order.amount }}'.replace(/,/g, ''));
+  if (!isNaN(orderAmount)) {
+    // Could add currency conversion or tax calculations here
+    console.log('Invoice amount:', orderAmount);
+  }
+  
+  // Add watermark for pending invoices
+  {% if order.status == 'PENDING' %}
+    addWatermark();
+  {% endif %}
+});
+
+// Add watermark for unpaid invoices
+function addWatermark() {
+  const watermark = document.createElement('div');
+  watermark.className = 'invoice-watermark no-print';
+  watermark.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-size: 8rem;
+    font-weight: 700;
+    color: rgba(239, 68, 68, 0.1);
+    pointer-events: none;
+    z-index: 1;
+    white-space: nowrap;
+  `;
+  watermark.textContent = 'UNPAID';
+  document.querySelector('.invoice-container').appendChild(watermark);
+}
+
+// Share invoice functionality
+function shareInvoice() {
+  if (navigator.share) {
+    navigator.share({
+      title: 'Invoice #{{ order.id }}',
+      text: 'Invoice for Order #{{ order.id }} from N-Y-N Apparel',
+      url: window.location.href
+    }).then(() => {
+      showAlert('Invoice shared successfully!', 'success');
+    }).catch(console.error);
+  } else {
+    // Fallback: Copy link to clipboard
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      showAlert('Invoice link copied to clipboard!', 'success');
+    }).catch(() => {
+      showAlert('Unable to share invoice. Please copy the URL manually.', 'error');
+    });
+  }
+}
+
+// Add a function to copy invoice details
+function copyInvoiceDetails() {
+  const invoiceText = `
+Invoice #{{ order.id }}
+N-Y-N Apparel
+
+Bill To: {{ order.customer_name }}
+Email: {{ order.customer_email }}
+Phone: {{ order.phone }}
+
+Order Date: {{ order.order_date|date:"M d, Y" }}
+Status: {{ order.get_status_display }}
+
+Items:
+{% for item in order_items %}
+- {{ item.product.name }} (Qty: {{ item.quantity }}) - Rs. {{ item.subtotal }}
+{% endfor %}
+
+Total: Rs. {{ order.amount }}
+  `.trim();
+  
+  navigator.clipboard.writeText(invoiceText).then(() => {
+    showAlert('Invoice details copied to clipboard!', 'success');
+  }).catch(() => {
+    showAlert('Unable to copy invoice details.', 'error');
+  });
+}
+
+// Initialize tooltips if Bootstrap is available
+if (typeof bootstrap !== 'undefined') {
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+}
+
+// Analytics tracking for invoice views (optional)
+function trackInvoiceView() {
+  // If you're using analytics, track invoice views here
+  console.log('Invoice viewed: #{{ order.id }}');
+  
+  // Example with Google Analytics
+  // if (typeof gtag !== 'undefined') {
+  //   gtag('event', 'invoice_view', {
+  //     'invoice_id': '{{ order.id }}',
+  //     'invoice_amount': '{{ order.amount }}',
+  //     'invoice_status': '{{ order.status }}'
+  //   });
+  // }
+}
+
+// Call tracking on page load
+trackInvoiceView();
+
+// Add helpful console messages for developers
+console.log('%cInvoice System', 'font-size: 20px; font-weight: bold; color: #2563eb;');
+console.log('Invoice ID:', '{{ order.id }}');
+console.log('Status:', '{{ order.status }}');
+console.log('Amount:', 'Rs. {{ order.amount }}');
+console.log('Customer:', '{{ order.customer_name }}');
+
+// Quality of life improvements
+// Auto-select invoice number on click for easy copying
+document.addEventListener('DOMContentLoaded', function() {
+  const invoiceNumber = document.querySelector('.invoice-number');
+  if (invoiceNumber) {
+    invoiceNumber.style.cursor = 'pointer';
+    invoiceNumber.title = 'Click to copy invoice number';
+    invoiceNumber.addEventListener('click', function() {
+      const text = this.textContent.trim();
+      navigator.clipboard.writeText(text).then(() => {
+        showAlert('Invoice number copied: ' + text, 'success');
+      });
+    });
+  }
+});
+
+// Add download as image functionality (optional advanced feature)
+async function downloadAsImage() {
+  try {
+    // This would require html2canvas library
+    showAlert('Image download feature coming soon!', 'info');
+    
+    // Implementation example:
+    // const canvas = await html2canvas(document.getElementById('invoice-content'));
+    // const link = document.createElement('a');
+    // link.download = 'invoice-{{ order.id }}.png';
+    // link.href = canvas.toDataURL();
+    // link.click();
+  } catch (error) {
+    console.error('Error generating image:', error);
+    showAlert('Unable to generate image. Please try PDF download instead.', 'error');
+  }
+}
+
+// Prevent accidental page close when invoice is being generated
+let isProcessing = false;
+
+window.addEventListener('beforeunload', function(e) {
+  if (isProcessing) {
+    e.preventDefault();
+    e.returnValue = 'Invoice is being processed. Are you sure you want to leave?';
+    return e.returnValue;
+  }
+});
+
+// Enhanced print functionality with options
+function printInvoiceWithOptions() {
+  const includeNotes = confirm('Include notes and terms in the printed invoice?');
+  
+  if (!includeNotes) {
+    const notesSection = document.querySelector('.notes-section');
+    if (notesSection) {
+      notesSection.style.display = 'none';
+    }
+  }
+  
+  window.print();
+  
+  // Restore notes section after print
+  setTimeout(() => {
+    const notesSection = document.querySelector('.notes-section');
+    if (notesSection) {
+      notesSection.style.display = 'block';
+    }
+  }, 1000);
+}
+</script>
+
+<!-- Additional Print Styles -->
+<style>
+@media print {
+  @page {
+    size: A4;
+    margin: 1cm;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .invoice-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Ensure colors are printed */
+  .invoice-header,
+  .invoice-status,
+  .invoice-table thead,
+  .company-name,
+  .total-amount,
+  .summary-box {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  /* Page breaks */
+  .invoice-header {
+    page-break-after: avoid;
+  }
+  
+  .invoice-table {
+    page-break-before: avoid;
+  }
+  
+  .invoice-footer {
+    page-break-before: auto;
+  }
+  
+  /* Avoid breaks inside important sections */
+  .info-block,
+  .summary-box,
+  .authorized-signature {
+    page-break-inside: avoid;
+  }
+}
+
+/* Additional responsive improvements */
+@media (max-width: 576px) {
+  .invoice-container {
+    padding: 1.5rem 1rem;
+  }
+  
+  .company-name {
+    font-size: 1.5rem;
+  }
+  
+  .invoice-title {
+    font-size: 1.5rem;
+  }
+  
+  .invoice-number {
+    font-size: 1.2rem;
+  }
+  
+  .invoice-table {
+    font-size: 0.75rem;
+  }
+  
+  .invoice-table th,
+  .invoice-table td {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .summary-box {
+    padding: 1.5rem;
+  }
+  
+  .summary-row {
+    font-size: 0.9rem;
+  }
+  
+  .total-amount {
+    font-size: 1.3rem !important;
+  }
+}
+
+/* Accessibility improvements */
+.invoice-container:focus-within {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 4px;
+}
+
+.btn-action:focus,
+.btn-back:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Loading state */
+.processing {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Additional visual enhancements */
+.invoice-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+/* Hover effects for interactive elements */
+.invoice-table tbody tr:hover {
+  transform: scale(1.01);
+  transition: transform 0.2s ease;
+}
+
+/* Status badge animation */
+.invoice-status {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Print preview indicator */
+.print-preview {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  z-index: 9999;
+  display: none;
+}
+
+.print-preview.active {
+  display: block;
+}
+</style>
+{% endblock body %}

@@ -1,117 +1,361 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Team{% endblock title %}
+{% block title %}Our Team{% endblock title %}
 
 {% block body_class %}team-page{% endblock body_class %}
 
 {% block content %}
 
-<!-- Main container with extra top margin to push everything below the navbar -->
-<div class="container mt-5 pt-5">   <!-- mt-5 & pt-5 add space below the nav -->
-  <div class="row justify-content-center gy-4">
-
-    <!-- Member 1 -->
-    <div class="col-lg-3 col-md-6 d-flex justify-content-center" data-aos="fade-up" data-aos-delay="100">
-      <div class="member text-center">
-        <img src="{% static 'assets/img/team/Team-1.png' %}" class="img-fluid" alt="Yukta Dhungana">
-        <div class="member-info mt-3">
-          <h4><strong>Yukta Dhungana</strong></h4> <br/>
-          <span class="role"><strong>Web Developer</strong></span> <br>
-          <p>Passionate about creating seamless online shopping experiences.
-            Dedicated to enhancing user satisfaction through innovative design and technology.
-            Always eager to learn and adapt to new challenges in the fast-paced e-commerce landscape.
-
-
-          </p>
-          <div class="social mt-2">
-            <a href="https://twitter.com/yourprofile"><i class="bi bi-twitter-x"></i></a>
-            <a href="https://www.facebook.com/yukta.dhungana19"><i class="bi bi-facebook"></i></a>
-            <a href="https://www.instagram.com/dhungana_yukta/"><i class="bi bi-instagram"></i></a>
-            <a href="https://www.linkedin.com/in/yukta-dhungana-71b21b2b7/"><i class="bi bi-linkedin"></i></a>
-          </div>
-        </div>
-      </div>
+<!-- Hero Section -->
+<section class="team-hero">
+  <div class="container">
+    <div class="hero-content" data-aos="fade-down">
+      <h1 class="hero-title">Meet Our Team</h1>
+      <p class="hero-subtitle">Passionate individuals dedicated to delivering excellence</p>
+      <div class="hero-divider"></div>
     </div>
-
-    <!-- Member 2 -->
-    <div class="col-lg-3 col-md-6 d-flex justify-content-center" data-aos="fade-up" data-aos-delay="200">
-      <div class="member text-center">
-        <img src="{% static 'assets/img/team/team-2.png' %}" class="img-fluid" alt="Nitu Josh">
-        <div class="member-info mt-3">
-          <h4><strong>Nitu Joshi</strong></h4> <br/>
-          <span class="role"><strong>Marketing Manager</strong></span><br/>
-          <p>Expert in crafting compelling marketing strategies that drive brand growth and customer engagement.
-            Skilled in digital marketing, social media management, and market analysis.
-            Committed to delivering measurable results and fostering strong customer relationships.
-          </p>
-          <div class="social mt-2">
-  <a href="https://twitter.com/yourprofile" target="_blank"><i class="bi bi-twitter"></i></a>
-  <a href="https://facebook.com/yourprofile" target="_blank"><i class="bi bi-facebook"></i></a>
-  <a href="https://instagram.com/yourprofile" target="_blank"><i class="bi bi-instagram"></i></a>
-  <a href="https://www.linkedin.com/in/nitu-joshi-521838319/" target="_blank"><i class="bi bi-linkedin"></i></a>
-</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Member 3 -->
-    <div class="col-lg-3 col-md-6 d-flex justify-content-center" data-aos="fade-up" data-aos-delay="300">
-      <div class="member text-center">
-        <img src="{% static 'assets/img/team/team-3.png' %}" class="img-fluid" alt="Nitu Joshi">
-        <div class="member-info mt-3">
-          <h4><strong>Nitika Sah</strong></h4><br>
-          <span class="role"><strong>Customer Service Representative</strong></span>
-          <br/>
-          <p>Dedicated to providing exceptional customer service and support.
-            Skilled in resolving issues, answering inquiries, and ensuring customer satisfaction.
-            Passionate about building strong relationships and enhancing the overall customer experience.</p>
-          <div class="social mt-2">
-            <a href="#"><i class="bi bi-twitter-x"></i></a>
-            <a href="https://www.facebook.com/nitika.sah.71"><i class="bi bi-facebook"></i></a>
-            <a href="https://www.instagram.com/nitika.333/"><i class="bi bi-instagram"></i></a>
-            <a href="https://www.linkedin.com/in/nitika-sah-ba859a312/"><i class="bi bi-linkedin"></i></a>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
-</div>
+</section>
+
+<!-- Team Members Section -->
+<section class="team-section">
+  <div class="container">
+    <div class="row justify-content-center g-4">
+
+      <!-- Member 1 -->
+      <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+        <div class="member-card">
+          <div class="member-image-wrapper">
+            <img src="{% static 'assets/img/team/Team-1.png' %}" class="member-image" alt="Yukta Dhungana">
+            <div class="member-overlay">
+              <div class="social-links">
+                <a href="https://twitter.com/yourprofile" class="social-icon" aria-label="Twitter">
+                  <i class="bi bi-twitter-x"></i>
+                </a>
+                <a href="https://www.facebook.com/yukta.dhungana19" class="social-icon" aria-label="Facebook">
+                  <i class="bi bi-facebook"></i>
+                </a>
+                <a href="https://www.instagram.com/dhungana_yukta/" class="social-icon" aria-label="Instagram">
+                  <i class="bi bi-instagram"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/yukta-dhungana-71b21b2b7/" class="social-icon" aria-label="LinkedIn">
+                  <i class="bi bi-linkedin"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="member-content">
+            <h3 class="member-name">Yukta Dhungana</h3>
+            <span class="member-role">Web Developer</span>
+            <p class="member-bio">Passionate about creating seamless online shopping experiences. Dedicated to enhancing user satisfaction through innovative design and technology.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Member 2 -->
+      <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+        <div class="member-card">
+          <div class="member-image-wrapper">
+            <img src="{% static 'assets/img/team/team-2.png' %}" class="member-image" alt="Nitu Joshi">
+            <div class="member-overlay">
+              <div class="social-links">
+                <a href="https://twitter.com/yourprofile" class="social-icon" aria-label="Twitter" target="_blank">
+                  <i class="bi bi-twitter-x"></i>
+                </a>
+                <a href="https://facebook.com/yourprofile" class="social-icon" aria-label="Facebook" target="_blank">
+                  <i class="bi bi-facebook"></i>
+                </a>
+                <a href="https://instagram.com/yourprofile" class="social-icon" aria-label="Instagram" target="_blank">
+                  <i class="bi bi-instagram"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/nitu-joshi-521838319/" class="social-icon" aria-label="LinkedIn" target="_blank">
+                  <i class="bi bi-linkedin"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="member-content">
+            <h3 class="member-name">Nitu Joshi</h3>
+            <span class="member-role">Marketing Manager</span>
+            <p class="member-bio">Expert in crafting compelling marketing strategies that drive brand growth and customer engagement. Skilled in digital marketing and social media management.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Member 3 -->
+      <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+        <div class="member-card">
+          <div class="member-image-wrapper">
+            <img src="{% static 'assets/img/team/team-3.png' %}" class="member-image" alt="Nitika Sah">
+            <div class="member-overlay">
+              <div class="social-links">
+                <a href="#" class="social-icon" aria-label="Twitter">
+                  <i class="bi bi-twitter-x"></i>
+                </a>
+                <a href="https://www.facebook.com/nitika.sah.71" class="social-icon" aria-label="Facebook">
+                  <i class="bi bi-facebook"></i>
+                </a>
+                <a href="https://www.instagram.com/nitika.333/" class="social-icon" aria-label="Instagram">
+                  <i class="bi bi-instagram"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/nitika-sah-ba859a312/" class="social-icon" aria-label="LinkedIn">
+                  <i class="bi bi-linkedin"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="member-content">
+            <h3 class="member-name">Nitika Sah</h3>
+            <span class="member-role">Customer Service Representative</span>
+            <p class="member-bio">Dedicated to providing exceptional customer service and support. Passionate about building strong relationships and enhancing the overall customer experience.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
 
 <style>
-/* --- Navbar tweaks specific to this page --- */
+/* --- Global Team Page Styles --- */
+body.team-page {
+    background:linear-gradient(to right, #d4cfcfff, #ffecec);
+    min-height: 100vh;
+}
+
+/* --- Navbar Tweaks --- */
 body.team-page .navbar {
-    background-color:#000 !important;
-    padding-top:.55rem;
-    padding-bottom:.55rem;
+    background-color: rgba(0, 0, 0, 0.95) !important;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    backdrop-filter: blur(10px);
 }
-body.team-page .navbar .nav-link { color:#fff !important; }
-body.team-page .navbar .nav-link:hover { color:#ddd !important; }
-#header.header { background-color:rgba(0,0,0,0.85)!important; }
-#header.header.scrolled { background-color:#000!important; }
-
-/* --- Team section spacing --- */
-.container.mt-5.pt-5 {
-    margin-top: 6rem !important;  /* pushes the entire block down */
-    padding-top: 2rem;            /* extra breathing room if needed */
+body.team-page .navbar .nav-link { 
+    color: #fff !important; 
+    transition: color 0.3s ease;
+}
+body.team-page .navbar .nav-link:hover { 
+    color: #ffecec !important; 
+}
+#header.header { 
+    background-color: rgba(0, 0, 0, 0.85) !important; 
+}
+#header.header.scrolled { 
+    background-color: #000 !important; 
 }
 
-/* --- Individual member cards --- */
-.member {
-    transition: transform 0.3s ease;
+/* --- Hero Section --- */
+.team-hero {
+    padding: 140px 0 60px;
     text-align: center;
 }
-.member:hover {
+
+.hero-content {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #2d2d2d;
+    margin-bottom: 1rem;
+    letter-spacing: -1px;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: #666;
+    margin-bottom: 2rem;
+    font-weight: 300;
+}
+
+.hero-divider {
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #eea5a5, #f8b398);
+    margin: 0 auto;
+    border-radius: 2px;
+}
+
+/* --- Team Section --- */
+.team-section {
+    padding: 60px 0 100px;
+}
+
+/* --- Member Cards --- */
+.member-card {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.member-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+/* --- Member Image --- */
+.member-image-wrapper {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+}
+
+.member-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.member-card:hover .member-image {
+    transform: scale(1.08);
+}
+
+/* --- Overlay with Social Links --- */
+.member-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(239, 188, 188, 0.9) 0%, rgba(255, 160, 122, 0.9) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.member-card:hover .member-overlay {
+    opacity: 1;
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+}
+
+.social-icon {
+    width: 45px;
+    height: 45px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff6b6b;
+    font-size: 20px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.social-icon:hover {
+    background: #2d2d2d;
+    color: #fff;
     transform: translateY(-5px);
 }
-/* Push the images themselves slightly lower inside each card */
-.member img {
-    margin-top: 30px;
+
+/* --- Member Content --- */
+.member-content {
+    padding: 30px 25px;
+    text-align: center;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
-.member-info .role {
-    display: block;
-    margin-bottom: 6px; /* space between role and paragraph */
+
+.member-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d2d2d;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.member-role {
+    display: inline-block;
+    font-size: 0.95rem;
+    color: #ff6b6b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    padding: 6px 20px;
+    background: rgba(255, 107, 107, 0.1);
+    border-radius: 20px;
+}
+
+.member-bio {
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 991px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .team-hero {
+        padding: 120px 0 40px;
+    }
+}
+
+@media (max-width: 767px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .team-hero {
+        padding: 100px 0 30px;
+    }
+    
+    .team-section {
+        padding: 40px 0 60px;
+    }
+    
+    .member-content {
+        padding: 25px 20px;
+    }
+    
+    .social-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+}
+
+/* --- Animation Enhancement --- */
+@media (prefers-reduced-motion: no-preference) {
+    .member-card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 </style>
 

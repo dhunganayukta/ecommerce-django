@@ -57,7 +57,7 @@ ROOT_URLCONF = 'ecommerce.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ["templates"],
+        'DIRS': [ BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -77,8 +77,12 @@ WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ecommercedb',
+        'USER': 'postgres', 
+        'PASSWORD': 'Django@',
+        'HOST': 'localhost',  # or your server IP
+        'PORT': '5434',
     }
 }
 
@@ -154,13 +158,21 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger'
 }
 
-# settings.py
 
+# Khalti Payment Gateway Configuration
 
+# Live keys (use with test-admin for testing)
+KHALTI_PUBLIC_KEY = "1cb68e2d20934fb6811c17e2b2f00601"  # Live public key
+KHALTI_SECRET_KEY = "Key 1dc34425927c457f9bbeb360a5d3a620"  # Live secret key with "Key " prefix
 
+# Use test-admin URL for testing with live keys
+KHALTI_VERIFY_URL = "https://test-admin.khalti.com/api/v2/payment/verify/"
 
+KHALTI_MODE = 'test'  # Keep as test for now
 
-
-
-
-
+# Test Credentials
+KHALTI_TEST_CREDENTIALS = {
+    'mobile': '9800000000 to 9800000005',
+    'mpin': '1111',
+    'otp': '987654'
+}

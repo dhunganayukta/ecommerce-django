@@ -1,0 +1,1426 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Order #{{ order.id }} - Order Details{% endblock title %}
+{% block body_class %}order-detail-page{% endblock body_class %}
+
+{% block content %}
+<main class="main bg-light" style="background:linear-gradient(to right, #d4cfcfff, #ffecec);min-height:100vh;padding-top:20px;">
+  <div class="container">
+    
+    <!-- Flash messages -->
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show modern-alert" role="alert">
+        <div class="alert-content">
+          <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle-fill{% elif message.tags == 'warning' %}exclamation-circle-fill{% else %}info-circle-fill{% endif %} me-2"></i>
+          <strong>{{ message }}</strong>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+
+    <!-- Back Button -->
+    <div class="mb-4">
+      <a href="{% url 'order_history' %}" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-left me-2"></i>Back to Orders
+      </a>
+    </div>
+
+    <!-- Order Header -->
+    <div class="order-detail-header">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h2 class="order-title">Order #{{ order.id }}</h2>
+          <p class="order-meta">
+            <i class="bi bi-calendar3 me-2"></i>
+            Placed on {{ order.order_date|date:"F d, Y \a\t h:i A" }}
+          </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <span class="status-badge status-{% if order.status == 'DELIVERED' %}delivered{% elif order.status == 'SHIPPED' %}shipped{% elif order.status == 'PROCESSING' %}processing{% elif order.status == 'CANCELLED' %}cancelled{% else %}pending{% endif %}">
+            <i class="bi bi-{% if order.status == 'DELIVERED' %}check-circle{% elif order.status == 'SHIPPED' %}truck{% elif order.status == 'PROCESSING' %}gear{% elif order.status == 'CANCELLED' %}x-circle{% else %}clock{% endif %} me-2"></i>
+            {{ order.get_status_display }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Progress Timeline -->
+    {% if order.status != 'CANCELLED' and order.status != 'PENDING' %}
+    <div class="timeline-card">
+      <div class="timeline-container">
+        <div class="timeline-step {% if order.status in 'PROCESSING,SHIPPED,DELIVERED' %}completed{% endif %}">
+          <div class="timeline-icon">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+          <div class="timeline-content">
+            <h6>Order Placed</h6>
+            <p>{{ order.order_date|date:"M d, Y" }}</p>
+          </div>
+        </div>
+        
+        <div class="timeline-line {% if order.status in 'SHIPPED,DELIVERED' %}completed{% endif %}"></div>
+        
+        <div class="timeline-step {% if order.status in 'SHIPPED,DELIVERED' %}completed{% elif order.status == 'PROCESSING' %}active{% endif %}">
+          <div class="timeline-icon">
+            <i class="bi bi-gear-fill"></i>
+          </div>
+          <div class="timeline-content">
+            <h6>Processing</h6>
+            <p>{% if order.status in 'PROCESSING,SHIPPED,DELIVERED' %}In Progress{% else %}Pending{% endif %}</p>
+          </div>
+        </div>
+        
+        <div class="timeline-line {% if order.status == 'DELIVERED' %}completed{% endif %}"></div>
+        
+        <div class="timeline-step {% if order.status == 'DELIVERED' %}completed{% elif order.status == 'SHIPPED' %}active{% endif %}">
+          <div class="timeline-icon">
+            <i class="bi bi-truck"></i>
+          </div>
+          <div class="timeline-content">
+            <h6>Shipped</h6>
+            <p>{% if order.status in 'SHIPPED,DELIVERED' %}On the way{% else %}Awaiting{% endif %}</p>
+          </div>
+        </div>
+        
+        <div class="timeline-line {% if order.status == 'DELIVERED' %}completed{% endif %}"></div>
+        
+        <div class="timeline-step {% if order.status == 'DELIVERED' %}completed active{% endif %}">
+          <div class="timeline-icon">
+            <i class="bi bi-house-check-fill"></i>
+          </div>
+          <div class="timeline-content">
+            <h6>Delivered</h6>
+            <p>{% if order.status == 'DELIVERED' %}Completed{% else %}Expected{% endif %}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+      <!-- Left Column -->
+      <div class="col-lg-8">
+        
+        <!-- Order Items -->
+        <div class="detail-card">
+          <div class="card-header">
+            <h5><i class="bi bi-cart3 me-2"></i>Order Items</h5>
+          </div>
+          <div class="card-body">
+            <div class="order-items-list">
+              {% for item in order.order_items.all %}
+              <div class="order-item">
+                <div class="item-image">
+                  {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                  {% else %}
+                    <div class="placeholder-image">
+                      <i class="bi bi-image"></i>
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="item-details">
+                  <h6>{{ item.product.name }}</h6>
+                  <p class="item-meta">
+                    <span class="badge bg-secondary">{{ item.product.category.name }}</span>
+                    {% if item.size %}
+                    <span class="ms-2">Size: <strong>{{ item.size }}</strong></span>
+                    {% endif %}
+                  </p>
+                  <p class="item-quantity">Quantity: <strong>{{ item.quantity }}</strong></p>
+                </div>
+                <div class="item-price">
+                  <p class="price">Rs. {{ item.price }}</p>
+                  <p class="subtotal">Total: <strong>Rs. {{ item.get_total }}</strong></p>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="detail-card">
+          <div class="card-header">
+            <h5><i class="bi bi-geo-alt me-2"></i>Shipping Address</h5>
+          </div>
+          <div class="card-body">
+            <div class="address-info">
+              <div class="info-row">
+                <i class="bi bi-person-fill"></i>
+                <div>
+                  <strong>{{ order.customer_name }}</strong>
+                </div>
+              </div>
+              <div class="info-row">
+                <i class="bi bi-envelope-fill"></i>
+                <div>{{ order.email }}</div>
+              </div>
+              <div class="info-row">
+                <i class="bi bi-telephone-fill"></i>
+                <div>{{ order.phone }}</div>
+              </div>
+              <div class="info-row">
+                <i class="bi bi-house-fill"></i>
+                <div>
+                  {{ order.address }}<br>
+                  {{ order.city }}, {{ order.state }} {{ order.zip_code }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Information -->
+        <div class="detail-card">
+          <div class="card-header">
+            <h5><i class="bi bi-credit-card me-2"></i>Payment Information</h5>
+          </div>
+          <div class="card-body">
+            <div class="payment-info">
+              <div class="info-row">
+                <span>Payment Method:</span>
+                <strong>{{ order.payment_method|default:"Not specified" }}</strong>
+              </div>
+              <div class="info-row">
+                <span>Payment Status:</span>
+                <span class="badge {% if order.payment_status == 'COMPLETED' %}bg-success{% elif order.payment_status == 'PENDING' %}bg-warning{% else %}bg-danger{% endif %}">
+                  {{ order.get_payment_status_display|default:"Pending" }}
+                </span>
+              </div>
+              {% if order.transaction_id %}
+              <div class="info-row">
+                <span>Transaction ID:</span>
+                <code>{{ order.transaction_id }}</code>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column -->
+      <div class="col-lg-4">
+        
+        <!-- Order Summary -->
+        <div class="detail-card sticky-card">
+          <div class="card-header">
+            <h5><i class="bi bi-receipt me-2"></i>Order Summary</h5>
+          </div>
+          <div class="card-body">
+            <div class="summary-details">
+              <div class="summary-row">
+                <span>Subtotal ({{ order.get_total_items }} items)</span>
+                <span>Rs. {{ order.amount }}</span>
+              </div>
+              <div class="summary-row">
+                <span>Shipping</span>
+                <span class="text-success"><strong>Free</strong></span>
+              </div>
+              <div class="summary-row">
+                <span>Tax</span>
+                <span class="text-success"><strong>Free</strong></span>
+              </div>
+              <div class="summary-divider"></div>
+              <div class="summary-row total">
+                <span><strong>Total Amount</strong></span>
+                <span class="total-amount">Rs. {{ order.amount }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="detail-card">
+          <div class="card-header">
+            <h5><i class="bi bi-lightning-fill me-2"></i>Quick Actions</h5>
+          </div>
+          <div class="card-body">
+            <div class="quick-actions">
+              {% if order.status == 'PENDING' %}
+                <button class="action-btn primary" onclick="payOrder('{{ order.id }}')">
+                  <i class="bi bi-credit-card me-2"></i>
+                  Pay Now
+                </button>
+              {% endif %}
+              
+              {% if order.status in 'PROCESSING,SHIPPED' %}
+                <button class="action-btn secondary" onclick="trackOrder('{{ order.id }}')">
+                  <i class="bi bi-geo-alt me-2"></i>
+                  Track Order
+                </button>
+              {% endif %}
+              
+              {% if order.status == 'DELIVERED' %}
+                <button class="action-btn secondary" onclick="downloadInvoice('{{ order.id }}')">
+                  <i class="bi bi-download me-2"></i>
+                  Download Invoice
+                </button>
+                <button class="action-btn secondary" onclick="reorder('{{ order.id }}')">
+                  <i class="bi bi-arrow-repeat me-2"></i>
+                  Reorder
+                </button>
+              {% endif %}
+              
+              {% if order.status not in 'DELIVERED,CANCELLED' %}
+                <button class="action-btn danger" onclick="cancelOrder('{{ order.id }}')">
+                  <i class="bi bi-x-circle me-2"></i>
+                  Cancel Order
+                </button>
+              {% endif %}
+              
+              <button class="action-btn outline" onclick="contactSupport('{{ order.id }}')">
+                <i class="bi bi-headset me-2"></i>
+                Contact Support
+              </button>
+              
+              <button class="action-btn outline" onclick="window.print()">
+                <i class="bi bi-printer me-2"></i>
+                Print Order
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Need Help -->
+        <div class="help-card">
+          <div class="help-icon">
+            <i class="bi bi-question-circle-fill"></i>
+          </div>
+          <h6>Need Help?</h6>
+          <p>Our customer support team is here to assist you</p>
+          <button class="btn btn-sm btn-outline-primary" onclick="contactSupport('{{ order.id }}')">
+            Contact Us
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+{% endblock content %}
+
+{% block body %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+/* Variables */
+:root {
+  --primary-color: #2563eb;
+  --secondary-color: #1e40af;
+  --accent-color: #1e3a8a;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --info-color: #3b82f6;
+  --light-gray: #f8fafc;
+  --medium-gray: #e2e8f0;
+  --dark-gray: #64748b;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-radius: 16px;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Base styling */
+body.order-detail-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body.order-detail-page .navbar {
+  background-color: #000 !important;
+  padding-top: .25rem;
+  padding-bottom: .25rem;
+  min-height: 20px;
+}
+
+body.order-detail-page .navbar .navbar-brand { 
+  font-size: 1.2rem; 
+}
+
+body.order-detail-page .navbar .nav-link { 
+  font-size: .9rem; 
+  color: #fff !important; 
+}
+
+body.order-detail-page .navbar .nav-link:hover { 
+  color: #ddd !important; 
+}
+
+.container {
+  padding-top: 6rem;
+  padding-bottom: 3rem;
+}
+
+/* Alert system */
+.modern-alert {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 1rem;
+  backdrop-filter: blur(10px);
+  border-left: 4px solid;
+  animation: slideInDown 0.3s ease-out;
+}
+
+.modern-alert.alert-success {
+  background: linear-gradient(135deg, rgba(220, 252, 231, 0.95), rgba(187, 247, 208, 0.95));
+  color: #047857;
+  border-left-color: var(--success-color);
+}
+
+.modern-alert.alert-danger,
+.modern-alert.alert-error {
+  background: linear-gradient(135deg, rgba(254, 242, 242, 0.95), rgba(252, 165, 165, 0.95));
+  color: #dc2626;
+  border-left-color: var(--danger-color);
+}
+
+.alert-content {
+  display: flex;
+  align-items: center;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -100%, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Order Header */
+.order-detail-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.order-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.order-meta {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Status badges */
+.status-badge {
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.status-pending {
+  background: linear-gradient(135deg, #fef3cd, #fbbf24);
+  color: #92400e;
+  border: 2px solid #fbbf24;
+}
+
+.status-processing {
+  background: linear-gradient(135deg, #dbeafe, var(--info-color));
+  color: #1e40af;
+  border: 2px solid var(--info-color);
+}
+
+.status-shipped {
+  background: linear-gradient(135deg, #e0e7ff, #8b5cf6);
+  color: #5b21b6;
+  border: 2px solid #8b5cf6;
+}
+
+.status-delivered {
+  background: linear-gradient(135deg, #d1fae5, var(--success-color));
+  color: #065f46;
+  border: 2px solid var(--success-color);
+}
+
+.status-cancelled {
+  background: linear-gradient(135deg, #fee2e2, var(--danger-color));
+  color: #991b1b;
+  border: 2px solid var(--danger-color);
+}
+
+/* Timeline */
+.timeline-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.timeline-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.timeline-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.timeline-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--medium-gray);
+  color: var(--dark-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  border: 3px solid white;
+  box-shadow: var(--shadow);
+}
+
+.timeline-step.completed .timeline-icon {
+  background: linear-gradient(135deg, var(--success-color), #059669);
+  color: white;
+}
+
+.timeline-step.active .timeline-icon {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+.timeline-content h6 {
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.timeline-content p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.timeline-line {
+  flex: 1;
+  height: 3px;
+  background: var(--medium-gray);
+  position: relative;
+  margin: 0 -20px;
+  z-index: 1;
+  margin-bottom: 80px;
+}
+
+.timeline-line.completed {
+  background: linear-gradient(90deg, var(--success-color), #059669);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
+  }
+}
+
+/* Detail Cards */
+.detail-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.detail-card .card-header {
+  background: var(--light-gray);
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--medium-gray);
+}
+
+.detail-card .card-header h5 {
+  color: var(--text-primary);
+  font-weight: 700;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.detail-card .card-body {
+  padding: 1.5rem;
+}
+
+/* Order Items */
+.order-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.order-item {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem;
+  background: var(--light-gray);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.order-item:hover {
+  background: #f1f5f9;
+  transform: translateX(4px);
+}
+
+.item-image {
+  flex-shrink: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid white;
+  box-shadow: var(--shadow);
+}
+
+.item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder-image {
+  width: 100%;
+  height: 100%;
+  background: var(--medium-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dark-gray);
+  font-size: 2rem;
+}
+
+.item-details {
+  flex: 1;
+}
+
+.item-details h6 {
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.item-meta {
+  margin-bottom: 0.5rem;
+}
+
+.item-quantity {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.item-price {
+  text-align: right;
+}
+
+.item-price .price {
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.item-price .subtotal {
+  font-size: 1.1rem;
+  color: var(--primary-color);
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Address and Payment Info */
+.address-info,
+.payment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-row {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--light-gray);
+  border-radius: 8px;
+  align-items: flex-start;
+}
+
+.info-row i {
+  color: var(--primary-color);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.info-row > div {
+  flex: 1;
+}
+
+.payment-info .info-row {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payment-info code {
+  background: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+}
+
+/* Order Summary */
+.sticky-card {
+  position: sticky;
+  top: 100px;
+}
+
+.summary-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  color: var(--text-secondary);
+}
+
+.summary-row.total {
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.summary-divider {
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  margin: 0.5rem 0;
+}
+
+.total-amount {
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  color: var(--primary-color) !important;
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.action-btn {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+}
+
+.action-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.action-btn.secondary {
+  background: white;
+  color: var(--text-primary);
+  border: 2px solid var(--medium-gray);
+}
+
+.action-btn.secondary:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.action-btn.danger {
+  background: white;
+  color: var(--danger-color);
+  border: 2px solid var(--danger-color);
+}
+
+.action-btn.danger:hover {
+  background: var(--danger-color);
+  color: white;
+}
+
+.action-btn.outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 2px solid var(--medium-gray);
+}
+
+.action-btn.outline:hover {
+  background: var(--light-gray);
+  color: var(--text-primary);
+}
+
+/* Help Card */
+.help-card {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.help-icon {
+  font-size: 3rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.help-card h6 {
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.help-card p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .sticky-card {
+    position: static;
+  }
+  
+  .timeline-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .timeline-line {
+    width: 3px;
+    height: 50px;
+    margin: 0;
+    margin-top: -10px;
+    margin-bottom: -10px;
+  }
+  
+  .timeline-step {
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+    width: 100%;
+  }
+  
+  .timeline-icon {
+    margin-bottom: 0;
+    margin-right: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding-top: 5rem;
+  }
+  
+  .order-detail-header {
+    padding: 1.5rem;
+  }
+  
+  .order-title {
+    font-size: 1.5rem;
+  }
+  
+  .status-badge {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+  
+  .order-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .item-image {
+    margin: 0 auto;
+  }
+  
+  .item-price {
+    text-align: center;
+  }
+  
+  .timeline-card {
+    padding: 1rem;
+  }
+  
+  .timeline-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .btn,
+  .action-btn,
+  .quick-actions,
+  .help-card,
+  .navbar,
+  .modern-alert {
+    display: none !important;
+  }
+  
+  .container {
+    padding-top: 0;
+    max-width: 100%;
+  }
+  
+  .detail-card {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+  
+  .order-detail-header,
+  .timeline-card {
+    break-inside: avoid;
+  }
+}
+</style>
+
+<script>
+// Payment function
+function payOrder(orderId) {
+  if (!orderId) {
+    showAlert('Invalid order ID', 'error');
+    return;
+  }
+  
+  // Show payment selection modal
+  const modalHTML = `
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header" style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);">
+            <h5 class="modal-title text-white">
+              <i class="bi bi-credit-card me-2"></i>Choose Payment Method
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted mb-4">Select your preferred payment gateway to complete Order #${orderId}</p>
+            <div class="d-grid gap-3">
+              <a href="/khalti/payment/?order_id=${orderId}" class="btn btn-lg" style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white;">
+                <i class="bi bi-wallet2 me-2"></i>Pay with Khalti
+              </a>
+              <a href="/esewa/payment/?order_id=${orderId}" class="btn btn-lg btn-success">
+                <i class="bi bi-credit-card me-2"></i>Pay with eSewa
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Remove existing modal if any
+  const existingModal = document.getElementById('paymentModal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  // Add modal to body
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Show modal using Bootstrap
+  const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+  modal.show();
+  
+  // Clean up modal after hiding
+  document.getElementById('paymentModal').addEventListener('hidden.bs.modal', function() {
+    this.remove();
+  });
+}
+
+// Track order function
+function trackOrder(orderId) {
+  if (!orderId) {
+    showAlert('Invalid order ID', 'error');
+    return;
+  }
+  
+  showAlert('Opening tracking information...', 'info');
+  
+  // Create tracking modal
+  const modalHTML = `
+    <div class="modal fade" id="trackingModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+            <h5 class="modal-title text-white">
+              <i class="bi bi-truck me-2"></i>Track Order #${orderId}
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="tracking-info">
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Your order is on its way!</strong>
+              </div>
+              <div class="tracking-steps">
+                <div class="track-step completed">
+                  <div class="track-icon"><i class="bi bi-check-circle-fill"></i></div>
+                  <div class="track-content">
+                    <h6>Order Confirmed</h6>
+                    <p>Your order has been placed successfully</p>
+                  </div>
+                </div>
+                <div class="track-step completed">
+                  <div class="track-icon"><i class="bi bi-box-seam"></i></div>
+                  <div class="track-content">
+                    <h6>Packed</h6>
+                    <p>Your order has been packed and ready to ship</p>
+                  </div>
+                </div>
+                <div class="track-step active">
+                  <div class="track-icon"><i class="bi bi-truck"></i></div>
+                  <div class="track-content">
+                    <h6>In Transit</h6>
+                    <p>Your order is on the way to you</p>
+                  </div>
+                </div>
+                <div class="track-step">
+                  <div class="track-icon"><i class="bi bi-house-check"></i></div>
+                  <div class="track-content">
+                    <h6>Delivered</h6>
+                    <p>Your order will be delivered soon</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Remove existing modal if any
+  const existingModal = document.getElementById('trackingModal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  // Add modal to body
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById('trackingModal'));
+  modal.show();
+  
+  // Clean up modal after hiding
+  document.getElementById('trackingModal').addEventListener('hidden.bs.modal', function() {
+    this.remove();
+  });
+}
+
+// Download invoice function
+function downloadInvoice(orderId) {
+  if (!orderId) {
+    showAlert('Invalid order ID', 'error');
+    return;
+  }
+  
+  const button = event.target;
+  const originalText = button.innerHTML;
+  button.innerHTML = '<i class="bi bi-arrow-clockwise spin me-2"></i>Generating...';
+  button.disabled = true;
+  
+  // Simulate invoice generation
+  setTimeout(() => {
+    showAlert('Invoice downloaded successfully!', 'success');
+    button.innerHTML = originalText;
+    button.disabled = false;
+    
+    // In a real application, you would trigger an actual download here
+    // window.location.href = `/orders/${orderId}/invoice/download/`;
+  }, 2000);
+}
+
+// Reorder function
+function reorder(orderId) {
+  if (!orderId) {
+    showAlert('Invalid order ID', 'error');
+    return;
+  }
+  
+  if (confirm('Add all items from this order to your cart?')) {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="bi bi-arrow-clockwise spin me-2"></i>Adding...';
+    button.disabled = true;
+    
+    // Simulate adding to cart
+    setTimeout(() => {
+      showAlert('Items added to cart successfully!', 'success');
+      button.innerHTML = originalText;
+      button.disabled = false;
+      
+      // Redirect to cart
+      setTimeout(() => {
+        window.location.href = '/cart/';
+      }, 1500);
+    }, 2000);
+  }
+}
+
+// Cancel order function
+function cancelOrder(orderId) {
+  if (!orderId) {
+    showAlert('Invalid order ID', 'error');
+    return;
+  }
+  
+  // Show confirmation modal
+  const modalHTML = `
+    <div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">
+              <i class="bi bi-exclamation-triangle me-2"></i>Cancel Order
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to cancel this order?</p>
+            <p class="text-muted small">This action cannot be undone. You will receive a refund according to our cancellation policy.</p>
+            <div class="mb-3">
+              <label class="form-label">Reason for cancellation:</label>
+              <select class="form-select" id="cancelReason">
+                <option value="">Select a reason...</option>
+                <option value="changed_mind">Changed my mind</option>
+                <option value="found_better">Found a better price</option>
+                <option value="ordered_wrong">Ordered wrong item</option>
+                <option value="delivery_delay">Delivery taking too long</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Order</button>
+            <button type="button" class="btn btn-danger" onclick="confirmCancellation('${orderId}')">
+              <i class="bi bi-x-circle me-2"></i>Yes, Cancel Order
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Remove existing modal if any
+  const existingModal = document.getElementById('cancelModal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  // Add modal to body
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+  modal.show();
+  
+  // Clean up modal after hiding
+  document.getElementById('cancelModal').addEventListener('hidden.bs.modal', function() {
+    this.remove();
+  });
+}
+
+// Confirm cancellation
+function confirmCancellation(orderId) {
+  const reason = document.getElementById('cancelReason').value;
+  
+  if (!reason) {
+    showAlert('Please select a reason for cancellation', 'error');
+    return;
+  }
+  
+  // Hide the modal
+  const modal = bootstrap.Modal.getInstance(document.getElementById('cancelModal'));
+  modal.hide();
+  
+  // Show processing message
+  showAlert('Processing cancellation...', 'info');
+  
+  // Simulate API call
+  setTimeout(() => {
+    showAlert('Order cancelled successfully. Refund will be processed within 5-7 business days.', 'success');
+    
+    // Reload page after 2 seconds
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
+  }, 2000);
+}
+
+// Contact support function
+function contactSupport(orderId) {
+  const supportMessage = `Hello, I need assistance with Order #${orderId}. `;
+  const subject = `Order Support - #${orderId}`;
+  
+  // Show support modal
+  const modalHTML = `
+    <div class="modal fade" id="supportModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+            <h5 class="modal-title text-white">
+              <i class="bi bi-headset me-2"></i>Contact Support
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted mb-4">Choose how you'd like to contact us:</p>
+            <div class="d-grid gap-3">
+              <a href="mailto:support@nynapparel.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(supportMessage)}" 
+                 class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-envelope me-2"></i>Email Support
+              </a>
+              <a href="tel:+9779800000000" class="btn btn-outline-success btn-lg">
+                <i class="bi bi-telephone me-2"></i>Call Support
+              </a>
+              <button type="button" class="btn btn-outline-info btn-lg" onclick="openLiveChat()">
+                <i class="bi bi-chat-dots me-2"></i>Live Chat
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Remove existing modal if any
+  const existingModal = document.getElementById('supportModal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  // Add modal to body
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById('supportModal'));
+  modal.show();
+  
+  // Clean up modal after hiding
+  document.getElementById('supportModal').addEventListener('hidden.bs.modal', function() {
+    this.remove();
+  });
+}
+
+// Open live chat
+function openLiveChat() {
+  showAlert('Opening live chat...', 'info');
+  // In a real application, this would open your live chat widget
+  setTimeout(() => {
+    showAlert('Live chat is currently unavailable. Please use email or phone support.', 'warning');
+  }, 1000);
+}
+
+// Show alert function
+function showAlert(message, type = 'info') {
+  // Remove existing alerts
+  const existingAlerts = document.querySelectorAll('.modern-alert');
+  existingAlerts.forEach(alert => alert.remove());
+  
+  const alert = document.createElement('div');
+  alert.className = `alert alert-${type} alert-dismissible fade show modern-alert`;
+  alert.style.position = 'fixed';
+  alert.style.top = '20px';
+  alert.style.left = '50%';
+  alert.style.transform = 'translateX(-50%)';
+  alert.style.zIndex = '1050';
+  alert.style.minWidth = '300px';
+  alert.style.maxWidth = '500px';
+  
+  alert.innerHTML = `
+    <div class="alert-content">
+      <i class="bi bi-${type === 'success' ? 'check-circle-fill' : type === 'error' ? 'exclamation-triangle-fill' : type === 'warning' ? 'exclamation-circle-fill' : 'info-circle-fill'} me-2"></i>
+      <strong>${message}</strong>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  `;
+  
+  document.body.appendChild(alert);
+  
+  // Auto-dismiss after 4 seconds
+  setTimeout(() => {
+    if (alert && alert.parentNode) {
+      alert.remove();
+    }
+  }, 4000);
+}
+
+// CSS for animations
+const animationCSS = `
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .spin { 
+    display: inline-block;
+    animation: spin 1s linear infinite; 
+  }
+  
+  /* Tracking modal styles */
+  .tracking-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  
+  .track-step {
+    display: flex;
+    gap: 1rem;
+    position: relative;
+    padding-left: 50px;
+  }
+  
+  .track-step::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 45px;
+    width: 2px;
+    height: calc(100% + 1.5rem);
+    background: #e2e8f0;
+  }
+  
+  .track-step:last-child::before {
+    display: none;
+  }
+  
+  .track-icon {
+    position: absolute;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    z-index: 2;
+  }
+  
+  .track-step.completed .track-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+  }
+  
+  .track-step.completed::before {
+    background: #10b981;
+  }
+  
+  .track-step.active .track-icon {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    color: white;
+    animation: pulse 2s infinite;
+  }
+  
+  .track-content h6 {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+  }
+  
+  .track-content p {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+`;
+
+const styleSheet = document.createElement("style");
+styleSheet.innerText = animationCSS;
+document.head.appendChild(styleSheet);
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-hide alerts
+  const alerts = document.querySelectorAll('.modern-alert');
+  alerts.forEach(function(alert) {
+    setTimeout(function() {
+      if (alert && alert.parentNode) {
+        alert.remove();
+      }
+    }, 4000);
+  });
+  
+  // Smooth scroll behavior
+  document.documentElement.style.scrollBehavior = 'smooth';
+  
+  // Add print button functionality
+  const printButtons = document.querySelectorAll('[onclick*="print"]');
+  printButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.stopPropagation();
+      window.print();
+    });
+  });
+});
+</script>
+{% endblock body %}

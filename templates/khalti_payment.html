@@ -1,0 +1,882 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Khalti Payment - Order #{{ order.id }}{% endblock title %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+:root {
+    --khalti-primary: #5c2d91;
+    --khalti-secondary: #764ba2;
+    --success-green: #10b981;
+    --warning-yellow: #f59e0b;
+    --error-red: #ef4444;
+    --blue-primary: #3b82f6;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-600: #4b5563;
+    --gray-900: #111827;
+    --beige-bg: #f5f0e8;
+}
+
+.payment-container {
+    background-color: var(--beige-bg);
+    min-height: 100vh;
+    padding-top: 100px;
+    padding-bottom: 80px;
+}
+
+.payment-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    animation: fadeInDown 0.6s ease-out;
+}
+
+.khalti-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.khalti-logo-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--khalti-primary) 0%, var(--khalti-secondary) 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    box-shadow: 0 8px 20px rgba(92, 45, 145, 0.3);
+}
+
+.khalti-logo-text {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--khalti-primary) 0%, var(--khalti-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.payment-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 0.5rem;
+}
+
+.payment-subtitle {
+    color: var(--gray-600);
+    font-size: 1rem;
+}
+
+.payment-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.payment-card:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.card-header-custom {
+    padding: 1.5rem;
+    background: var(--gray-50);
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.card-header-custom h5 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-body-custom {
+    padding: 2rem;
+}
+
+.order-details {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: var(--gray-50);
+    border-radius: 8px;
+}
+
+.detail-label {
+    color: var(--gray-600);
+    font-weight: 500;
+}
+
+.detail-value {
+    color: var(--gray-900);
+    font-weight: 600;
+    text-align: right;
+}
+
+.total-row {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    padding: 1.25rem;
+    border-radius: 12px;
+    margin-top: 1rem;
+    border: 2px solid var(--blue-primary);
+}
+
+.total-amount {
+    color: var(--blue-primary);
+    font-size: 1.75rem;
+    font-weight: 800;
+}
+
+.test-mode-alert {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid var(--warning-yellow);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.test-mode-alert i {
+    font-size: 1.5rem;
+    color: var(--warning-yellow);
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+.test-credentials-box {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 2px dashed var(--warning-yellow);
+}
+
+.test-credentials-box h6 {
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.credential-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--gray-50);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    font-family: 'Courier New', monospace;
+}
+
+.credential-item:last-child {
+    margin-bottom: 0;
+}
+
+.credential-label {
+    color: var(--gray-600);
+    font-weight: 600;
+}
+
+.credential-value {
+    color: var(--khalti-primary);
+    font-weight: 700;
+    background: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.payment-methods-list {
+    display: grid;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+}
+
+.payment-method-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.payment-method-item:hover {
+    border-color: var(--khalti-primary);
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(92, 45, 145, 0.15);
+}
+
+.method-icon {
+    font-size: 1.75rem;
+    color: var(--khalti-primary);
+    width: 40px;
+    text-align: center;
+}
+
+.method-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.btn-khalti-pay {
+    width: 100%;
+    padding: 1.25rem 2rem;
+    background: linear-gradient(135deg, var(--khalti-primary) 0%, var(--khalti-secondary) 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(92, 45, 145, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.btn-khalti-pay:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(92, 45, 145, 0.4);
+}
+
+.btn-khalti-pay:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-spinner {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+.payment-status-box {
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-top: 1.5rem;
+    display: none;
+    text-align: center;
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.status-success {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border: 2px solid var(--success-green);
+    color: #065f46;
+}
+
+.status-error {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border: 2px solid var(--error-red);
+    color: #991b1b;
+}
+
+.status-processing {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border: 2px solid var(--blue-primary);
+    color: #1e40af;
+}
+
+.payment-status-box i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.how-it-works-section {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-title i {
+    color: var(--khalti-primary);
+}
+
+.steps-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.step-item {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+}
+
+.step-number {
+    flex-shrink: 0;
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, var(--blue-primary) 0%, #2563eb 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.step-content h6 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 0.5rem;
+}
+
+.step-content p {
+    color: var(--gray-600);
+    line-height: 1.6;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.security-badge {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border: 2px solid var(--success-green);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.security-icon-badge {
+    font-size: 3rem;
+    color: var(--success-green);
+    flex-shrink: 0;
+}
+
+.security-content h6 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #065f46;
+    margin-bottom: 0.5rem;
+}
+
+.security-content p {
+    color: #047857;
+    margin: 0;
+    line-height: 1.6;
+    font-size: 0.9rem;
+}
+
+.features-list {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+    border-color: var(--khalti-primary);
+    box-shadow: 0 4px 12px rgba(92, 45, 145, 0.1);
+}
+
+.feature-icon {
+    font-size: 1.75rem;
+    color: var(--khalti-primary);
+    width: 40px;
+    text-align: center;
+}
+
+.feature-text {
+    flex: 1;
+}
+
+.feature-title {
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+}
+
+.feature-description {
+    font-size: 0.85rem;
+    color: var(--gray-600);
+    line-height: 1.4;
+    margin: 0;
+}
+
+.btn-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: white;
+    color: var(--gray-600);
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    border: 2px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.btn-back-link:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-600);
+    color: var(--gray-900);
+    transform: translateX(-5px);
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .payment-container {
+        padding-top: 80px;
+    }
+    .khalti-logo-text {
+        font-size: 2rem;
+    }
+    .payment-title {
+        font-size: 1.5rem;
+    }
+    .card-body-custom {
+        padding: 1.5rem;
+    }
+    .step-item {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .security-badge {
+        flex-direction: column;
+        text-align: center;
+    }
+    .feature-item {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
+
+<main class="payment-container">
+    <div class="container">
+
+        <div class="payment-header">
+            <div class="khalti-brand">
+                <div class="khalti-logo-icon">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <div class="khalti-logo-text">Khalti</div>
+            </div>
+            <h1 class="payment-title">Secure Payment Checkout</h1>
+            <p class="payment-subtitle">Complete your payment using Nepal's most trusted digital wallet</p>
+        </div>
+
+        <div class="test-mode-alert">
+            <i class="bi bi-info-circle-fill"></i>
+            <div>
+                <strong style="display: block; margin-bottom: 0.25rem;">Test Mode Active</strong>
+                <p class="mb-0" style="font-size: 0.9rem;">You're in testing environment. Use the test credentials below to complete payment.</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-7">
+                
+                <div class="payment-card">
+                    <div class="card-header-custom">
+                        <h5>
+                            <i class="bi bi-receipt"></i>
+                            Order Summary
+                        </h5>
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="order-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Order ID</span>
+                                <span class="detail-value">#{{ order.id }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Order Date</span>
+                                <span class="detail-value">{{ order.order_date|date:"F d, Y" }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Customer</span>
+                                <span class="detail-value">{{ request.user.get_full_name|default:request.user.username }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Email</span>
+                                <span class="detail-value">{{ request.user.email }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="total-row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong style="font-size: 1.1rem;">Total Amount</strong>
+                                <span class="total-amount">Rs. {{ order.amount }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="payment-card">
+                    <div class="card-header-custom">
+                        <h5>
+                            <i class="bi bi-credit-card"></i>
+                            Available Payment Methods
+                        </h5>
+                    </div>
+                    <div class="card-body-custom">
+                        <p class="text-muted mb-3" style="font-size: 0.95rem;">Choose from multiple payment options supported by Khalti</p>
+                        
+                        <div class="payment-methods-list">
+                            <div class="payment-method-item">
+                                <i class="bi bi-wallet2 method-icon"></i>
+                                <div class="method-name">Khalti Wallet</div>
+                            </div>
+                            <div class="payment-method-item">
+                                <i class="bi bi-bank method-icon"></i>
+                                <div class="method-name">E-Banking</div>
+                            </div>
+                            <div class="payment-method-item">
+                                <i class="bi bi-phone method-icon"></i>
+                                <div class="method-name">Mobile Banking</div>
+                            </div>
+                            <div class="payment-method-item">
+                                <i class="bi bi-credit-card method-icon"></i>
+                                <div class="method-name">Connect IPS</div>
+                            </div>
+                        </div>
+
+                        <div class="test-credentials-box">
+                            <h6>
+                                <i class="bi bi-key-fill"></i>
+                                Test Credentials
+                            </h6>
+                            <div class="credential-item">
+                                <span class="credential-label">Mobile Number:</span>
+                                <span class="credential-value">9800000000 - 9800000005</span>
+                            </div>
+                            <div class="credential-item">
+                                <span class="credential-label">MPIN:</span>
+                                <span class="credential-value">1111</span>
+                            </div>
+                            <div class="credential-item">
+                                <span class="credential-label">OTP:</span>
+                                <span class="credential-value">987654</span>
+                            </div>
+                        </div>
+
+                        <button class="btn-khalti-pay" id="khalti-payment-btn" onclick="initiateKhaltiPayment()">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Pay Rs. {{ order.amount }} Securely</span>
+                            <span class="btn-spinner" id="btn-spinner" style="display: none;">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </span>
+                        </button>
+
+                        <div class="payment-status-box" id="payment-status">
+                            <i class="bi bi-info-circle"></i>
+                            <div id="status-text" style="font-weight: 600;">Processing payment...</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-lg-5">
+                
+                <div class="how-it-works-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-lightbulb"></i>
+                        How Khalti Payment Works
+                    </h5>
+                    
+                    <div class="steps-list">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h6>Click Pay Button</h6>
+                                <p>Click the secure payment button above to open Khalti's payment gateway.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h6>Select Payment Method</h6>
+                                <p>Choose your preferred payment option from Khalti wallet, banking, or cards.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h6>Enter Credentials</h6>
+                                <p>Securely enter your payment credentials and verify with OTP.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h6>Payment Complete</h6>
+                                <p>Receive instant confirmation and your order will be processed immediately.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="features-list">
+                    <div class="feature-item">
+                        <i class="bi bi-shield-check feature-icon"></i>
+                        <div class="feature-text">
+                            <div class="feature-title">100% Secure</div>
+                            <p class="feature-description">Bank-grade encryption protects your data</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <i class="bi bi-lightning-charge feature-icon"></i>
+                        <div class="feature-text">
+                            <div class="feature-title">Instant Processing</div>
+                            <p class="feature-description">Real-time payment verification</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="security-badge">
+                    <i class="bi bi-shield-lock-fill security-icon-badge"></i>
+                    <div class="security-content">
+                        <h6>Secure & Trusted Payment</h6>
+                        <p>Your payment is protected by Khalti's advanced security system with SSL encryption and PCI DSS compliance.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{% url 'order_history' %}" class="btn-back-link">
+                <i class="bi bi-arrow-left"></i>
+                Back to Orders
+            </a>
+        </div>
+
+    </div>
+</main>
+
+<script src="https://khalti.s3.ap-south-1.amazonaws.com/KPG/dist/2020.12.17.0.0.0/khalti-checkout.iffe.js"></script>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+console.log('%c🔒 Khalti Payment Gateway', 'color: #5c2d91; font-weight: bold; font-size: 16px;');
+console.log('Order ID:', '{{ order.id }}');
+console.log('Amount (Rs):', '{{ order.amount }}');
+console.log('Amount (Paisa):', {{ amount_in_paisa }});
+
+const publicKey = '{{ khalti_public_key }}';
+if (!publicKey || publicKey === 'None') {
+    console.error('❌ Khalti public key not configured');
+    document.getElementById('khalti-payment-btn').disabled = true;
+    alert('Payment gateway is not properly configured. Please contact support.');
+}
+
+const khaltiConfig = {
+    publicKey: publicKey,
+    productIdentity: "{{ order.id }}",
+    productName: "Order #{{ order.id }} - N-Y-N Apparel",
+    productUrl: "{{ request.build_absolute_uri }}",
+    paymentPreference: ["KHALTI", "EBANKING", "MOBILE_BANKING", "CONNECT_IPS", "SCT"],
+    eventHandler: {
+        onSuccess(payload) {
+            console.log('✅ Payment successful:', payload);
+            verifyPayment(payload);
+        },
+        onError(error) {
+            console.error('❌ Payment error:', error);
+            showPaymentStatus('error', 'Payment failed: ' + (error.message || 'Unknown error'));
+            resetPaymentButton();
+        },
+        onClose() {
+            console.log('ℹ️ Payment window closed');
+            resetPaymentButton();
+        }
+    }
+};
+
+let khaltiCheckout;
+try {
+    khaltiCheckout = new KhaltiCheckout(khaltiConfig);
+    console.log('✅ Khalti initialized successfully');
+} catch (error) {
+    console.error('❌ Khalti initialization failed:', error);
+}
+
+function initiateKhaltiPayment() {
+    const btn = document.getElementById('khalti-payment-btn');
+    const spinner = document.getElementById('btn-spinner');
+    
+    btn.disabled = true;
+    spinner.style.display = 'inline-block';
+    
+    try {
+        khaltiCheckout.show({ amount: {{ amount_in_paisa }} });
+    } catch (error) {
+        console.error('❌ Error opening Khalti:', error);
+        alert('Failed to open payment window. Please try again.');
+        resetPaymentButton();
+    }
+}
+
+function verifyPayment(payload) {
+    showPaymentStatus('processing', 'Payment successful! Verifying with server...');
+    
+    fetch("{% url 'khalti_verify' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            token: payload.token,
+            amount: payload.amount
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showPaymentStatus('success', 'Payment verified! Redirecting to order details...');
+            setTimeout(() => {
+                window.location.href = "/orders/" + data.order_id + "/";
+            }, 2000);
+        } else {
+            throw new Error(data.message || 'Verification failed');
+        }
+    })
+    .catch(error => {
+        console.error('❌ Verification error:', error);
+        showPaymentStatus('error', 'Payment verification failed. Please contact support with Order ID: {{ order.id }}');
+    });
+}
+
+function showPaymentStatus(type, message) {
+    const statusBox = document.getElementById('payment-status');
+    const statusText = document.getElementById('status-text');
+    
+    statusBox.classList.remove('status-success', 'status-error', 'status-processing');
+    
+    if (type === 'success') {
+        statusBox.classList.add('status-success');
+        statusBox.querySelector('i').className = 'bi bi-check-circle-fill';
+    } else if (type === 'error') {
+        statusBox.classList.add('status-error');
+        statusBox.querySelector('i').className = 'bi bi-x-circle-fill';
+    } else if (type === 'processing') {
+        statusBox.classList.add('status-processing');
+        statusBox.querySelector('i').className = 'bi bi-arrow-clockwise';
+    }
+    
+    statusText.textContent = message;
+    statusBox.style.display = 'block';
+}
+
+function resetPaymentButton() {
+    const btn = document.getElementById('khalti-payment-btn');
+    const spinner = document.getElementById('btn-spinner');
+    
+    btn.disabled = false;
+    spinner.style.display = 'none';
+}
+</script>
+
+{% endblock content %}

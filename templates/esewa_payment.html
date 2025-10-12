@@ -1,31 +1,513 @@
 {% extends "base.html" %}
-{% block title %}eSewa Payment{% endblock title %}
+{% load static %}
+
+{% block title %}eSewa Payment - Order #{{ order.id }}{% endblock title %}
 
 {% block content %}
-<main class="main d-flex align-items-center justify-content-center" style="min-height:80vh;">
-  <div class="card shadow p-5 text-center">
-    <h3 class="mb-4">Redirecting to eSewa...</h3>
-    <p>Please wait while we securely process your payment.</p>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 
-    <form action="{{ esewa_url }}" method="POST" id="esewa-form">
-      <input type="hidden" name="amt" value="{{ amt }}">
-      <input type="hidden" name="pdc" value="0">
-      <input type="hidden" name="psc" value="0">
-      <input type="hidden" name="txAmt" value="0">
-      <input type="hidden" name="tAmt" value="{{ amt }}">
-      <input type="hidden" name="pid" value="{{ pid }}">
-      <input type="hidden" name="scd" value="{{ scd }}">
-      <input type="hidden" name="su" value="{{ su }}">
-      <input type="hidden" name="fu" value="{{ fu }}">
-      <button type="submit" class="btn btn-success">Pay with eSewa</button>
-    </form>
-  </div>
+<style>
+.payment-container {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(to right, #fdf6f6, #ffecec);
+    min-height: 100vh;
+    padding-top: 120px;
+}
+
+.payment-header .payment-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.payment-subtitle {
+    color: #718096;
+    font-size: 1.1rem;
+}
+
+.order-summary-card,
+.payment-method-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: none;
+    overflow: hidden;
+}
+
+.card-header {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.card-header h5 {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.order-info .info-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+}
+
+.info-item .label {
+    color: #718096;
+    font-weight: 500;
+}
+
+.info-item .value {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.amount-breakdown {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 12px;
+}
+
+.breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.breakdown-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 1rem 0;
+}
+
+.total-row {
+    font-size: 1.1rem;
+}
+
+.total-amount {
+    color: #00a651;
+    font-size: 1.3rem;
+}
+
+.esewa-info {
+    padding: 1rem;
+    background: rgba(0, 166, 81, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 166, 81, 0.1);
+}
+
+.esewa-description {
+    color: #4a5568;
+    margin: 0;
+}
+
+.payment-status {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.status-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.status-item.active {
+    opacity: 1;
+}
+
+.status-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #718096;
+    transition: all 0.3s ease;
+}
+
+.status-item.active .status-icon {
+    background: #00a651;
+    color: white;
+}
+
+.payment-progress .progress {
+    height: 8px;
+    border-radius: 4px;
+    background: #e2e8f0;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, #00a651, #4ade80);
+    border-radius: 4px;
+    transition: width 1s ease;
+}
+
+.btn-payment-primary {
+    background: linear-gradient(135deg, #00a651, #4ade80);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    min-width: 200px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-payment-primary:hover {
+    background: linear-gradient(135deg, #059669, #10b981);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 166, 81, 0.3);
+}
+
+.btn-payment-primary.loading {
+    background: #6b7280;
+    cursor: not-allowed;
+}
+
+.btn-payment-primary.submitted {
+    background: #059669;
+}
+
+.btn-loader {
+    display: none;
+    margin-left: 0.5rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.security-notice {
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 15px;
+    padding: 1.5rem;
+}
+
+.security-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.security-icon {
+    color: #10b981;
+    font-size: 2rem;
+}
+
+.security-text h6 {
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.security-text p {
+    color: #4a5568;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 2rem;
+    background: white;
+    color: #4a5568;
+    text-decoration: none;
+    border-radius: 25px;
+    border: 2px solid #e2e8f0;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-back:hover {
+    background: #00a651;
+    color: white;
+    border-color: #00a651;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 166, 81, 0.3);
+}
+
+@media (max-width: 768px) {
+    .payment-header .payment-title {
+        font-size: 1.5rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .payment-status {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .security-content {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
+
+<main class="main payment-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                
+                <!-- Payment Header -->
+                <div class="payment-header text-center mb-4">
+                    <div class="payment-logo mb-3">
+                        <i class="bi bi-shield-check text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <h2 class="payment-title">Secure Payment with eSewa</h2>
+                    <p class="payment-subtitle">Complete your order payment securely</p>
+                </div>
+
+                <!-- Order Summary Card -->
+                <div class="order-summary-card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-receipt me-2"></i>
+                            Order Summary
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="order-info">
+                                    <div class="info-item">
+                                        <span class="label">Order ID:</span>
+                                        <span class="value">#{{ order.id }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="label">Order Date:</span>
+                                        <span class="value">{{ order.order_date|date:"F d, Y" }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="label">Items:</span>
+                                        <span class="value">{{ order.get_total_items }} item{{ order.get_total_items|pluralize }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="amount-breakdown">
+                                    <div class="breakdown-row">
+                                        <span>Subtotal:</span>
+                                        <span>Rs. {{ order.amount }}</span>
+                                    </div>
+                                    <div class="breakdown-row">
+                                        <span>Service Charge:</span>
+                                        <span class="text-success">Free</span>
+                                    </div>
+                                    <div class="breakdown-row">
+                                        <span>Delivery:</span>
+                                        <span class="text-success">Free</span>
+                                    </div>
+                                    <div class="breakdown-divider"></div>
+                                    <div class="breakdown-row total-row">
+                                        <strong>Total Amount:</strong>
+                                        <strong class="total-amount">Rs. {{ order.amount }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method Card -->
+                <div class="payment-method-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-credit-card me-2"></i>
+                            Payment Method: eSewa
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        
+                        <!-- eSewa Logo and Info -->
+                        <div class="esewa-info mb-4">
+                            <div class="esewa-logo mb-3">
+                                <img src="https://esewa.com.np/common/images/esewa_logo.png" 
+                                     alt="eSewa" 
+                                     style="height: 60px;" 
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <div style="display: none; font-size: 2rem; color: #00a651; font-weight: bold;">eSewa</div>
+                            </div>
+                            <p class="esewa-description">
+                                You will be redirected to eSewa's secure payment gateway to complete your transaction.
+                                Please have your eSewa credentials ready.
+                            </p>
+                        </div>
+
+                        <!-- Payment Status -->
+                        <div class="payment-status mb-4">
+                            <div id="status-preparing" class="status-item active">
+                                <div class="status-icon">
+                                    <i class="bi bi-gear-fill"></i>
+                                </div>
+                                <span>Preparing Payment...</span>
+                            </div>
+                            <div id="status-redirecting" class="status-item">
+                                <div class="status-icon">
+                                    <i class="bi bi-arrow-right-circle-fill"></i>
+                                </div>
+                                <span>Redirecting to eSewa...</span>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="payment-progress mb-4">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" 
+                                     style="width: 0%;" 
+                                     id="payment-progress-bar">
+                                </div>
+                            </div>
+                            <small class="text-muted">Secure connection established</small>
+                        </div>
+
+                        <!-- eSewa Form with CSRF Token -->
+                        <form action="https://uat.esewa.com.np/epay/main" method="POST" id="esewa-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="amt" value="{{ order.amount }}">
+                            <input type="hidden" name="pdc" value="0">
+                            <input type="hidden" name="psc" value="0">
+                            <input type="hidden" name="txAmt" value="0">
+                            <input type="hidden" name="tAmt" value="{{ order.amount }}">
+                            <input type="hidden" name="pid" value="{{ order.id }}">
+                            <input type="hidden" name="scd" value="EPAYTEST">
+                            <input type="hidden" name="su" value="{{ request.scheme }}://{{ request.get_host }}{% url 'esewa_success' %}">
+                            <input type="hidden" name="fu" value="{{ request.scheme }}://{{ request.get_host }}{% url 'esewa_failure' %}">
+                            
+                            <button type="submit" class="btn-payment-primary" id="payment-btn">
+                                <i class="bi bi-shield-check me-2"></i>
+                                Proceed to eSewa
+                                <span class="btn-loader" id="btn-loader">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </span>
+                            </button>
+                        </form>
+
+                        <!-- Manual Submit -->
+                        <div class="manual-submit mt-3" id="manual-submit" style="display: none;">
+                            <p class="text-muted mb-2">Taking longer than expected?</p>
+                            <button type="button" class="btn btn-outline-success" onclick="submitForm()">
+                                Click here to proceed manually
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Notice -->
+                <div class="security-notice mt-4">
+                    <div class="security-content">
+                        <div class="security-icon">
+                            <i class="bi bi-shield-lock-fill"></i>
+                        </div>
+                        <div class="security-text">
+                            <h6>Your payment is secure</h6>
+                            <p>All transactions are encrypted and processed through eSewa's secure payment gateway. Your card details are never stored on our servers.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back to Order -->
+                <div class="text-center mt-4 mb-5">
+                    <a href="{% url 'order_history' %}" class="btn-back">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Back to Orders
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </main>
 
 <script>
-  // Auto submit after 1 second
-  setTimeout(() => {
-    document.getElementById("esewa-form").submit();
-  }, 1000);
+document.addEventListener('DOMContentLoaded', function() {
+    let countdown = 3;
+    let progressStep = 0;
+    
+    // Update countdown and progress
+    const updateStatus = () => {
+        const progressBar = document.getElementById('payment-progress-bar');
+        const preparingStatus = document.getElementById('status-preparing');
+        const redirectingStatus = document.getElementById('status-redirecting');
+        const paymentBtn = document.getElementById('payment-btn');
+        const btnLoader = document.getElementById('btn-loader');
+        const manualSubmit = document.getElementById('manual-submit');
+        
+        progressStep += 33.33;
+        progressBar.style.width = progressStep + '%';
+        
+        if (countdown === 2) {
+            preparingStatus.classList.remove('active');
+            redirectingStatus.classList.add('active');
+            paymentBtn.classList.add('loading');
+            btnLoader.style.display = 'inline-block';
+        }
+        
+        countdown--;
+        
+        if (countdown <= 0) {
+            // Auto submit form
+            document.getElementById('esewa-form').submit();
+        }
+    };
+    
+    // Start countdown
+    const interval = setInterval(updateStatus, 1000);
+    
+    // Show manual submit option after 8 seconds
+    setTimeout(() => {
+        document.getElementById('manual-submit').style.display = 'block';
+    }, 8000);
+    
+    // Clear interval on form submit
+    document.getElementById('esewa-form').addEventListener('submit', function() {
+        clearInterval(interval);
+        document.getElementById('payment-btn').classList.add('submitted');
+        document.getElementById('payment-btn').innerHTML = '<i class="bi bi-check-circle me-2"></i>Redirecting...';
+    });
+});
+
+function submitForm() {
+    document.getElementById('esewa-form').submit();
+}
+
+// Prevent multiple submissions
+let formSubmitted = false;
+document.getElementById('esewa-form').addEventListener('submit', function(e) {
+    if (formSubmitted) {
+        e.preventDefault();
+        return false;
+    }
+    formSubmitted = true;
+});
 </script>
+
 {% endblock content %}

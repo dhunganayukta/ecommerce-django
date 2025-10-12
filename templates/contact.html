@@ -1,54 +1,823 @@
 {% extends "base.html" %}
-{% block title %}Contact Us{% endblock title %}
+{% block title %}Contact Us - N-Y-N Apparel{% endblock title %}
 
-        {% block body %}
-       
-<h1 class="text-center">Contact Us</h1>
-<div class="container mt-2">
-        {% for message in messages %}
-        <div class="alert alert-{{message.tags}} alert-dismissible fade show" role="alert">
-               <strong> {{ message }}</strong>
-               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endfor %}
-        <div class="row">
-                <div class="col-md-4"></div>
-                <div class="col-md-4">
-                        <form action="/contact/" method="post">
-                                {% csrf_token %}
-                                <br />
-                                
-                                        <label for="name" class="form-label"> Full Name</label>
-                                        <div class="form-group">
-                                                <input type="text" class="form-control p-2" id="name" name="name" required>
-                                        </div>
-                                        <label for="email" class="form-label">Email</label>
-                                        <div class="form-group">
-                                                <input type="email" class="form-control p-2" id="email" name="email" value="{{user.email}}" required>
-                                        </div>
-                                        <label for="description" class="form-label">How Can I Help You?</label>
-                                        <div class="form-group">
-                                                <input type="text" class="form-control p-2" id="description" name="description" required>
-                                        </div>
+{% block body_class %}contact-page{% endblock body_class %}
 
+{% block body %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 
-                                        <label for="phonenumber" class="form-label">Phone Number</label>
-                                        <div class="form-group">
-                                                <input type="text" class="form-control p-2" id="phonenumber" name="phonenumber" required><br/>
-                                        </div>
-                                <button type="submit" class="btn btn-primary">Submit</button>
-                        </form>
+<main class="contact-main">
+  <!-- Hero Section -->
+  <div class="contact-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1 class="hero-title">Get In Touch</h1>
+      <p class="hero-subtitle">We'd love to hear from you. Send us a message!</p>
+    </div>
+  </div>
 
+  <div class="container">
+    <!-- Flash Messages -->
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show modern-alert" role="alert">
+      <div class="alert-content">
+        <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %} me-2"></i>
+        <strong>{{ message }}</strong>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
 
+    <div class="row g-4 align-items-stretch">
+      <!-- Contact Form -->
+      <div class="col-lg-7">
+        <div class="contact-card">
+          <div class="card-icon">
+            <i class="bi bi-envelope-heart"></i>
+          </div>
+          <h2 class="card-title">Send us a Message</h2>
+          <p class="card-subtitle">Fill out the form below and we'll get back to you as soon as possible</p>
 
-
-
-
+          <form action="/contact/" method="post" class="contact-form">
+            {% csrf_token %}
+            
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="form-group-modern">
+                  <label for="name" class="form-label">
+                    <i class="bi bi-person"></i>
+                    Full Name
+                  </label>
+                  <input type="text" 
+                         class="form-input" 
+                         id="name" 
+                         name="name" 
+                         placeholder="John Doe"
+                         required>
                 </div>
-                <div class="col-md-4"></div>
-        </div>
+              </div>
 
-</div>
+              <div class="col-md-6">
+                <div class="form-group-modern">
+                  <label for="email" class="form-label">
+                    <i class="bi bi-envelope"></i>
+                    Email Address
+                  </label>
+                  <input type="email" 
+                         class="form-input" 
+                         id="email" 
+                         name="email" 
+                         value="{{ user.email }}"
+                         placeholder="john@example.com"
+                         required>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group-modern">
+                  <label for="phonenumber" class="form-label">
+                    <i class="bi bi-telephone"></i>
+                    Phone Number
+                  </label>
+                  <input type="tel" 
+                         class="form-input" 
+                         id="phonenumber" 
+                         name="phonenumber" 
+                         placeholder="+977 9800000000"
+                         required>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group-modern">
+                  <label for="subject" class="form-label">
+                    <i class="bi bi-tag"></i>
+                    Subject
+                  </label>
+                  <select class="form-input" id="subject" name="subject" required>
+                    <option value="">Choose a topic...</option>
+                    <option value="general">General Inquiry</option>
+                    <option value="order">Order Support</option>
+                    <option value="product">Product Question</option>
+                    <option value="feedback">Feedback</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="form-group-modern">
+                  <label for="description" class="form-label">
+                    <i class="bi bi-chat-dots"></i>
+                    How Can We Help You?
+                  </label>
+                  <textarea class="form-input" 
+                            id="description" 
+                            name="description" 
+                            rows="5"
+                            placeholder="Tell us what's on your mind..."
+                            required></textarea>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <button type="submit" class="btn-submit">
+                  <i class="bi bi-send-fill me-2"></i>
+                  Send Message
+                  <span class="btn-arrow">
+                    <i class="bi bi-arrow-right"></i>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="col-lg-5">
+        <div class="info-cards">
+          
+          <!-- Contact Details Card -->
+          <div class="info-card">
+            <div class="info-icon email">
+              <i class="bi bi-envelope-fill"></i>
+            </div>
+            <h3 class="info-title">Email Us</h3>
+            <p class="info-text">support@nynapparel.com</p>
+            <a href="mailto:support@nynapparel.com" class="info-link">
+              Send Email <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
+
+          <!-- Phone Card -->
+          <div class="info-card">
+            <div class="info-icon phone">
+              <i class="bi bi-telephone-fill"></i>
+            </div>
+            <h3 class="info-title">Call Us</h3>
+            <p class="info-text">+977 9800000000</p>
+            <a href="tel:+9779800000000" class="info-link">
+              Call Now <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
+
+          <!-- Location Card -->
+          <div class="info-card">
+            <div class="info-icon location">
+              <i class="bi bi-geo-alt-fill"></i>
+            </div>
+            <h3 class="info-title">Visit Us</h3>
+            <p class="info-text">Kathmandu, Nepal</p>
+            <a href="#" class="info-link">
+              Get Directions <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
+
+          <!-- Business Hours Card -->
+          <div class="info-card hours">
+            <div class="info-icon clock">
+              <i class="bi bi-clock-fill"></i>
+            </div>
+            <h3 class="info-title">Business Hours</h3>
+            <div class="hours-list">
+              <div class="hour-item">
+                <span>Monday - Friday</span>
+                <strong>9:00 AM - 6:00 PM</strong>
+              </div>
+              <div class="hour-item">
+                <span>Saturday</span>
+                <strong>10:00 AM - 4:00 PM</strong>
+              </div>
+              <div class="hour-item">
+                <span>Sunday</span>
+                <strong>Closed</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Social Media -->
+          <div class="social-card">
+            <h3 class="social-title">Follow Us</h3>
+            <div class="social-links">
+              <a href="#" class="social-link facebook">
+                <i class="bi bi-facebook"></i>
+              </a>
+              <a href="#" class="social-link instagram">
+                <i class="bi bi-instagram"></i>
+              </a>
+              <a href="#" class="social-link twitter">
+                <i class="bi bi-twitter"></i>
+              </a>
+              <a href="#" class="social-link linkedin">
+                <i class="bi bi-linkedin"></i>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="faq-section">
+      <h2 class="faq-title">Frequently Asked Questions</h2>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="faq-card">
+            <div class="faq-icon">
+              <i class="bi bi-question-circle"></i>
+            </div>
+            <h4>How long does shipping take?</h4>
+            <p>Orders are typically delivered within 3-5 business days within Nepal.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="faq-card">
+            <div class="faq-icon">
+              <i class="bi bi-arrow-return-left"></i>
+            </div>
+            <h4>What's your return policy?</h4>
+            <p>We offer 7-day returns for unused items in original condition.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="faq-card">
+            <div class="faq-icon">
+              <i class="bi bi-credit-card"></i>
+            </div>
+            <h4>What payment methods do you accept?</h4>
+            <p>We accept Khalti, eSewa, and Cash on Delivery.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="faq-card">
+            <div class="faq-icon">
+              <i class="bi bi-truck"></i>
+            </div>
+            <h4>Do you offer free shipping?</h4>
+            <p>Yes! We offer free shipping on all orders across Nepal.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<style>
+  :root {
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --success: #10b981;
+    --text-dark: #1e293b;
+    --text-medium: #475569;
+    --text-light: #94a3b8;
+    --bg-light: #f8fafc;
+    --border: #e2e8f0;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  /* Navbar Styles */
+  body.contact-page .navbar {
+    background-color: #000 !important;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  body.contact-page .navbar .navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff !important;
+  }
+
+  body.contact-page .navbar .nav-link {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #ffffff !important;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.3s ease;
+  }
+
+  body.contact-page .navbar .nav-link:hover {
+    color: #3b82f6 !important;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 6px;
+  }
+
+  /* Main Container */
+  .contact-main {
+    background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+    min-height: 100vh;
+    padding-bottom: 4rem;
+  }
+
+  /* Hero Section */
+  .contact-hero {
+    position: relative;
+    height: 280px;
+    background: linear-gradient(to right, #d4cfcfff, #ffecec);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: -60px;
+    overflow: hidden;
+  }
+  
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
+  }
+
+  .hero-content {
+    position: relative;
+    text-align: center;
+    color: white;
+    animation: fadeInDown 0.8s ease;
+  }
+
+  .hero-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .hero-subtitle {
+    font-size: 1.25rem;
+    opacity: 0.95;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Alerts */
+  .modern-alert {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin: 2rem 0;
+    animation: slideDown 0.3s ease;
+  }
+
+  .modern-alert.alert-success {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+    border-left: 4px solid var(--success);
+  }
+
+  .alert-content {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Contact Card */
+  .contact-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border);
+    height: 100%;
+    animation: fadeInUp 0.6s ease;
+  }
+
+  .card-icon {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+  }
+
+  .card-icon i {
+    font-size: 2rem;
+    color: white;
+  }
+
+  .card-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+  }
+
+  .card-subtitle {
+    color: var(--text-medium);
+    margin-bottom: 2rem;
+  }
+
+  /* Form Styles */
+  .contact-form {
+    margin-top: 1.5rem;
+  }
+
+  .form-group-modern {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+  }
+
+  .form-label i {
+    color: var(--primary);
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  textarea.form-input {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  select.form-input {
+    cursor: pointer;
+  }
+
+  /* Submit Button */
+  .btn-submit {
+    width: 100%;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+  }
+
+  .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(59, 130, 246, 0.4);
+  }
+
+  .btn-submit:active {
+    transform: translateY(0);
+  }
+
+  .btn-arrow {
+    transition: transform 0.3s ease;
+  }
+
+  .btn-submit:hover .btn-arrow {
+    transform: translateX(4px);
+  }
+
+  /* Info Cards */
+  .info-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .info-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    animation: fadeInRight 0.6s ease;
+  }
+
+  .info-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .info-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: white;
+  }
+
+  .info-icon.email {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+  }
+
+  .info-icon.phone {
+    background: linear-gradient(135deg, #10b981, #059669);
+  }
+
+  .info-icon.location {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+  }
+
+  .info-icon.clock {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  }
+
+  .info-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+  }
+
+  .info-text {
+    color: var(--text-medium);
+    margin-bottom: 0.75rem;
+  }
+
+  .info-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.3s ease;
+  }
+
+  .info-link:hover {
+    gap: 0.5rem;
+    color: var(--primary-dark);
+  }
+
+  /* Hours Card */
+  .info-card.hours {
+    padding: 1.5rem;
+  }
+
+  .hours-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .hour-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.625rem;
+    background: var(--bg-light);
+    border-radius: 8px;
+  }
+
+  .hour-item span {
+    color: var(--text-medium);
+    font-size: 0.9rem;
+  }
+
+  .hour-item strong {
+    color: var(--text-dark);
+    font-size: 0.9rem;
+  }
+
+  /* Social Card */
+  .social-card {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-radius: 16px;
+    padding: 1.75rem;
+    text-align: center;
+    animation: fadeInRight 0.8s ease;
+  }
+
+  .social-title {
+    color: white;
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .social-links {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .social-link {
+    width: 45px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .social-link:hover {
+    background: white;
+    transform: translateY(-4px);
+  }
+
+  .social-link.facebook:hover {
+    color: #1877f2;
+  }
+
+  .social-link.instagram:hover {
+    color: #e4405f;
+  }
+
+  .social-link.twitter:hover {
+    color: #1da1f2;
+  }
+
+  .social-link.linkedin:hover {
+    color: #0077b5;
+  }
+
+  /* FAQ Section */
+  .faq-section {
+    margin-top: 4rem;
+    padding-top: 3rem;
+  }
+
+  .faq-title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 2rem;
+  }
+
+  .faq-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border);
+    height: 100%;
+    transition: all 0.3s ease;
+  }
+
+  .faq-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary);
+  }
+
+  .faq-icon {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    color: white;
+    font-size: 1.25rem;
+  }
+
+  .faq-card h4 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.625rem;
+  }
+
+  .faq-card p {
+    color: var(--text-medium);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* Animations */
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 992px) {
+    .hero-title {
+      font-size: 2.25rem;
+    }
+
+    .contact-card {
+      padding: 2rem;
+    }
+
+    .info-cards {
+      margin-top: 2rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .contact-hero {
+      height: 220px;
+      margin-bottom: -40px;
+    }
+
+    .hero-title {
+      font-size: 1.875rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1rem;
+    }
+
+    .contact-card {
+      padding: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+    }
+
+    .faq-title {
+      font-size: 1.625rem;
+    }
+  }
+</style>
 
 {% endblock body %}
-
