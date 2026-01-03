@@ -21,10 +21,14 @@ This README has been created specifically for your GitHub profile (@dhunganayukt
 7. Paste the new content
 8. Click "Commit changes"
 
-### Step 3: Customize Your Profile (Optional but Recommended)
+### Step 3: Customize Your Profile (⚠️ IMPORTANT - REQUIRED UPDATES)
+
+> **Note**: The profile README contains placeholder information that MUST be updated with your actual details before use. Do not skip this step!
 
 #### 📧 Update Email Address
-Replace `yukta.dhungana@example.com` with your actual email address in the "Get In Touch" section.
+Replace `yukta.dhungana@example.com` with your actual email address in the "Get In Touch" section (line 213).
+- Use a professional email address (e.g., yourname@gmail.com or your custom domain)
+- Alternatively, remove the email badge if you prefer not to display your email publicly
 
 #### 🔗 Update Social Links
 Update the following links with your actual profiles:
@@ -47,12 +51,19 @@ The current theme is "tokyonight". You can change it to:
 
 Just replace `theme=tokyonight` in the GitHub stats URLs with your preferred theme.
 
-#### 📚 Update Projects Section
-Replace the placeholder project links with your actual projects:
-- Update repository URLs
-- Update project descriptions
-- Add or remove projects as needed
-- Replace technology stacks as appropriate
+#### 📚 Update Projects Section (⚠️ CRITICAL)
+**The README includes placeholder project links that need to be updated!**
+
+Most project links (except the E-Commerce Platform) are placeholders and may not exist:
+- ✅ E-Commerce Platform - Already pointing to your actual repository
+- ⚠️ Portfolio, AI Chatbot, Task Manager, LMS - These are PLACEHOLDERS
+
+**Action Required**:
+1. Replace placeholder URLs with your actual project repositories
+2. Update project descriptions to match your real projects
+3. Remove projects that don't exist yet or replace with your actual work
+4. Update technology stacks to match what you actually used
+5. Consider adding links to live demos if available
 
 #### ✨ Personalize Fun Facts
 Update the "Fun Facts & Hobbies" section with your actual interests, hobbies, and favorite quotes.

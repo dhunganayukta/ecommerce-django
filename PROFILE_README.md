@@ -1,3 +1,16 @@
+<!-- 
+  ⚠️ IMPORTANT: CUSTOMIZATION REQUIRED BEFORE USE ⚠️
+  
+  This profile README contains placeholder information that MUST be updated:
+  
+  1. EMAIL (Line 213): Replace 'yukta.dhungana@example.com' with your real email
+  2. SOCIAL LINKS: Update LinkedIn and Instagram URLs with your actual profiles
+  3. PROJECT LINKS: Most project URLs are placeholders - update with your real repositories
+  4. PERSONAL DETAILS: Customize hobbies, interests, goals, and fun facts
+  
+  See PROFILE_README_INSTRUCTIONS.md for detailed customization guide.
+-->
+
 <div align="center">
   
 # 👋 Hi there, I'm Yukta Dhungana! 
